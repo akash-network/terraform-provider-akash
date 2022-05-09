@@ -9,7 +9,9 @@ import (
 // Provider -
 func Provider() *schema.Provider {
 	return &schema.Provider{
-		ResourcesMap: map[string]*schema.Resource{},
+		ResourcesMap: map[string]*schema.Resource{
+			"akash_deployment": resourceDeployment(),
+		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"akash_deployments": dataSourceDeployments(),
 		},

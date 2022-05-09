@@ -13,6 +13,15 @@ module "akash_deployments" {
   source = "./deployment"
 }
 
-output "akash_deployments" {
-  value = module.akash_deployments.all_active_deployments
+resource "akash_deployment" "my_deployment" {
+  sdl = file("./wordpress.yaml")
+  //sdl = "changed"
 }
+
+output "my_deployment" {
+  value = akash_deployment.my_deployment
+}
+
+/*output "akash_deployments" {
+  value = module.akash_deployments.all_active_deployments
+}*/

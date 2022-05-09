@@ -3,6 +3,7 @@ package client
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"time"
 )
@@ -60,4 +61,50 @@ func GetDeployments() ([]map[string]interface{}, error) {
 	}
 
 	return deployments, nil
+}
+
+func GetDeployment(dseq string, owner string) (map[string]interface{}, error) {
+	d := make(map[string]interface{})
+	d["deployment_state"] = "active"
+	d["deployment_dseq"] = "12345"
+	d["deployment_owner"] = "akashdokfmdjmf023n32423"
+
+	return d, nil
+}
+
+func CreateDeployment(sdl string) (map[string]interface{}, error) {
+	err := ioutil.WriteFile("deployment.yaml", []byte(sdl), 0666)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create deployment using the file created with the SDL
+	/*	out, err := exec.Command("akash tx deployment create deployment.yaml -o json").Output(); if err != nil {
+			return nil, err
+		}
+
+		err = json.NewDecoder(strings.NewReader(string(out))).Decode(&out); if err != nil {
+			return nil, err
+		}*/
+
+	d := make(map[string]interface{})
+	d["deployment_state"] = "active"
+	d["deployment_dseq"] = "12345"
+	d["deployment_owner"] = "akashdokfmdjmf023n32423"
+
+	return d, nil
+}
+
+func DeleteDeployment(dseq string, owner string) error {
+	/*	out, err := exec.Command("akash tx deployment close --dseq " + dseq + " --owner " + owner + " --from pktminerwallet -y --fees 5000uakt").Output()
+		if err != nil {
+			return err
+		}
+
+		err = json.NewDecoder(strings.NewReader(string(out))).Decode(&out)
+		if err != nil {
+			return err
+		}*/
+
+	return nil
 }

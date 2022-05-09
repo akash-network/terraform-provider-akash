@@ -2,6 +2,10 @@ package akash
 
 import (
 	"context"
+	"fmt"
+	"strconv"
+	"terraform-provider-hashicups/akash/client"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -14,35 +18,109 @@ func resourceDeployment() *schema.Resource {
 		UpdateContext: resourceDeploymentUpdate,
 		DeleteContext: resourceDeploymentDelete,
 		Schema: map[string]*schema.Schema{
-			"container_image": &schema.Schema{
+			"sdl": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+			},
+			"last_updated": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+			},
+			"deployment_state": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"deployment_dseq": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"deployment_owner": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 		},
 	}
 }
 
 func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	// Warning or errors can be collected in a slice type
-	var diags diag.Diagnostics
+	deployment, err := client.CreateDeployment(d.Get("sdl").(string))
+	if err != nil {
+		diag.FromErr(err)
+	}
 
-	return diags
+	if err := d.Set("deployment_dseq", deployment["dseq"]); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("deployment_owner", deployment["owner"]); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("deployment_state", deployment["state"]); err != nil {
+		return diag.FromErr(err)
+	}
+
+	d.SetId(strconv.FormatInt(time.Now().Unix(), 10))
+
+	return resourceDeploymentRead(ctx, d, m)
 }
 
 func resourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
+	//deploymentId := d.Id()
+
+	// TODO: Get the deployment by Id
+	deployment, err := client.GetDeployment(d.Get("deployment_dseq").(string), d.Get("deployment_owner").(string))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err := d.Set("sdl", "<deployment sdl>"); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("deployment_dseq", deployment["deployment_dseq"]); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("deployment_owner", deployment["deployment_owner"]); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("deployment_state", deployment["deployment_state"]); err != nil {
+		return diag.FromErr(err)
+	}
+
 	return diags
 }
 
 func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	deploymentId := d.Id()
+	fmt.Println(deploymentId)
+
+	if d.HasChange("sdl") {
+
+		// Update the deployment
+
+		err := d.Set("last_updated", time.Now().Format(time.RFC850))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	return resourceDeploymentRead(ctx, d, m)
 }
 
 func resourceDeploymentDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
+
+	err := client.DeleteDeployment(d.Get("deployment_dseq").(string), d.Get("deployment_owner").(string))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	// d.SetId("") is automatically called assuming delete returns no errors, but
+	// it is added here for explicitness.
+	d.SetId("")
 
 	return diags
 }
