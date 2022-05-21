@@ -39,6 +39,22 @@ func resourceDeployment() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"escrow_account_owner": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"escrow_account_balance_denom": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"escrow_account_balance_amount": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"escrow_account_state": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -49,13 +65,13 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 		diag.FromErr(err)
 	}
 
-	if err := d.Set("deployment_dseq", deployment["dseq"]); err != nil {
+	if err := d.Set("deployment_dseq", deployment["deployment_dseq"]); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("deployment_owner", deployment["owner"]); err != nil {
+	if err := d.Set("deployment_owner", deployment["deployment_owner"]); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("deployment_state", deployment["state"]); err != nil {
+	if err := d.Set("deployment_state", deployment["deployment_state"]); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -76,9 +92,6 @@ func resourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m inter
 		return diag.FromErr(err)
 	}
 
-	if err := d.Set("sdl", "<deployment sdl>"); err != nil {
-		return diag.FromErr(err)
-	}
 	if err := d.Set("deployment_dseq", deployment["deployment_dseq"]); err != nil {
 		return diag.FromErr(err)
 	}
@@ -86,6 +99,18 @@ func resourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m inter
 		return diag.FromErr(err)
 	}
 	if err := d.Set("deployment_state", deployment["deployment_state"]); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("escrow_account_owner", deployment["escrow_account_owner"]); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("escrow_account_balance_denom", deployment["escrow_account_balance_denom"]); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("escrow_account_balance_amount", deployment["escrow_account_balance_amount"]); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("escrow_account_state", deployment["escrow_account_state"]); err != nil {
 		return diag.FromErr(err)
 	}
 

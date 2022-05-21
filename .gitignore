@@ -66,3 +66,4 @@ terraform
 **/.terraform.lock.hcl
 examples/deployment.yaml
 .idea
+.bin
