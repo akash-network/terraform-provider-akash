@@ -1,8 +1,10 @@
 package client
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"io/ioutil"
 	"net/http"
 	"os/exec"
@@ -11,7 +13,7 @@ import (
 	"time"
 )
 
-const AKASH_BINARY = "./bin/akash"
+const AKASH_BINARY = "../bin/akash"
 
 type DeploymentId struct {
 	Dseq  string `json:"dseq"`
@@ -113,24 +115,36 @@ func GetDeployment(dseq string, owner string) (map[string]interface{}, error) {
 	return d, nil
 }
 
-func CreateDeployment(sdl string) (map[string]interface{}, error) {
+// TODO: Extract the different operations inside here to different methods on different clients. Transactions, Deployments...
+func CreateDeployment(ctx context.Context, sdl string) (map[string]interface{}, error) {
+	tflog.Debug(ctx, "Creating temporary deployment file")
+
 	err := ioutil.WriteFile("deployment.yaml", []byte(sdl), 0666)
 	if err != nil {
 		return nil, err
 	}
 
+	tflog.Debug(ctx, "Creating deployment")
 	// Create deployment using the file created with the SDL
 	dseq, err := transactionCreateDeployment(err)
 	if err != nil {
+		tflog.Error(ctx, "Failed creating deployment")
+		tflog.Debug(ctx, fmt.Sprintf("%s", err))
 		return nil, err
 	}
+	tflog.Info(ctx, "Deployment created with DSEQ "+dseq)
 
+	tflog.Debug(ctx, "Querying available bids")
 	// Check bids on deployments and choose one
 	bids, err := queryBidList(dseq)
 	if err != nil {
 		return nil, err
 	}
+
+	tflog.Debug(ctx, fmt.Sprintf("Received %d bids", len(bids)))
 	provider := bids[0].Id.Provider
+
+	fmt.Println(provider)
 
 	// Create lease and send manifest
 
@@ -138,6 +152,7 @@ func CreateDeployment(sdl string) (map[string]interface{}, error) {
 	d["deployment_state"] = "active"
 	d["deployment_dseq"] = dseq
 	d["deployment_owner"] = "akashdokfmdjmf023n32423"
+	d["provider_address"] = provider
 
 	return d, nil
 }
@@ -171,6 +186,22 @@ func queryBidList(dseq string) (types.Bids, error) {
 	}
 
 	return bids, nil
+}
+
+func transactionCreateLease(provider string, dseq string, owner string) error {
+	_, err := exec.Command(fmt.Sprintf(
+		"%s tx market lease create --owner %s --dseq %s --gseq 1 --oseq 1 --provider %s --from $AKASH_KEY_NAME --fees 5000uakt -y -o json",
+		AKASH_BINARY,
+		owner,
+		dseq,
+		provider,
+	)).Output()
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func DeleteDeployment(dseq string, owner string) error {

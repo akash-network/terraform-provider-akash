@@ -55,14 +55,18 @@ func resourceDeployment() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"provider_address": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
 
 func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	deployment, err := client.CreateDeployment(d.Get("sdl").(string))
+	deployment, err := client.CreateDeployment(ctx, d.Get("sdl").(string))
 	if err != nil {
-		diag.FromErr(err)
+		return diag.FromErr(err)
 	}
 
 	if err := d.Set("deployment_dseq", deployment["deployment_dseq"]); err != nil {
@@ -72,6 +76,9 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 		return diag.FromErr(err)
 	}
 	if err := d.Set("deployment_state", deployment["deployment_state"]); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("provider_address", deployment["provider_address"]); err != nil {
 		return diag.FromErr(err)
 	}
 

@@ -10,6 +10,8 @@ export AKASH_NET="https://raw.githubusercontent.com/ovrclk/net/master/mainnet"
 export AKASH_VERSION="$(curl -s "$AKASH_NET/version.txt")"
 export AKASH_CHAIN_ID="$(curl -s "$AKASH_NET/chain-id.txt")"
 export AKASH_NODE="http://akash.c29r3.xyz:80/rpc"
+
+export TF_LOG_PROVIDER=DEBUG
 ```
 
 ## Clean terraform
@@ -37,4 +39,12 @@ Then, run the following command to initialize the workspace and apply the sample
 
 ```shell
 cd examples && terraform init && terraform apply --auto-approve
+```
+
+## Akash Testing
+
+
+
+```shell
+./bin/akash tx deployment close --dseq <dseq> --owner <owner> --from $AKASH_KEY_NAME -y --fees 5000uakt
 ```
