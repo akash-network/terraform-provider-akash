@@ -3,6 +3,11 @@ module terraform-provider-hashicups
 go 1.18
 
 require (
+	github.com/hashicorp/terraform-plugin-log v0.4.0
+	github.com/hashicorp/terraform-plugin-sdk/v2 v2.15.0
+)
+
+require (
 	github.com/BurntSushi/toml v1.1.0 // indirect
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
@@ -29,8 +34,6 @@ require (
 	github.com/hashicorp/hcl/v2 v2.12.0 // indirect
 	github.com/hashicorp/logutils v1.0.0 // indirect
 	github.com/hashicorp/terraform-plugin-go v0.9.0 // indirect
-	github.com/hashicorp/terraform-plugin-log v0.4.0 // indirect
-	github.com/hashicorp/terraform-plugin-sdk/v2 v2.15.0 // indirect
 	github.com/hashicorp/terraform-registry-address v0.0.0-20210412075316-9b2996cce896 // indirect
 	github.com/hashicorp/terraform-svchost v0.0.0-20200729002733-f050f53b9734 // indirect
 	github.com/hashicorp/yamux v0.0.0-20181012175058-2f1d1f20f75d // indirect
@@ -47,10 +50,8 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/oklog/run v1.0.0 // indirect
-	github.com/ovrclk/akash v0.16.3 // indirect
 	github.com/pelletier/go-toml v1.9.4 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/regen-network/cosmos-proto v0.3.1 // indirect
 	github.com/spf13/cobra v1.4.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/vmihailenco/msgpack v4.0.4+incompatible // indirect

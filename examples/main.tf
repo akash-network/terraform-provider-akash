@@ -15,7 +15,6 @@ module "akash_deployments" {
 
 resource "akash_deployment" "my_deployment" {
   sdl = file("./wordpress.yaml")
-  //sdl = "changed"
 }
 
 output "my_deployment" {

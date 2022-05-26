@@ -2,7 +2,10 @@ package akash
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"os"
 	"strconv"
 	"terraform-provider-hashicups/akash/client"
 	"time"
@@ -64,21 +67,47 @@ func resourceDeployment() *schema.Resource {
 }
 
 func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	deployment, err := client.CreateDeployment(ctx, d.Get("sdl").(string))
+	dseq, err := client.CreateDeployment(ctx, d.Get("sdl").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if err := d.Set("deployment_dseq", deployment["deployment_dseq"]); err != nil {
+	tflog.Debug(ctx, "Querying available bids")
+	bids, err := client.GetBids(ctx, dseq, time.Second*60)
+	if err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("deployment_owner", deployment["deployment_owner"]); err != nil {
+	if len(bids) == 0 {
+		return diag.FromErr(errors.New("no bids on deployment"))
+	}
+	tflog.Info(ctx, fmt.Sprintf("Received %d bids in the deployment", len(bids)))
+
+	// Select the provider
+	provider := bids[0].Id.Provider
+	tflog.Debug(ctx, fmt.Sprintf("Selected provider %s", provider))
+
+	// Create a lease
+	err = client.CreateLease(ctx, dseq, provider)
+	if err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("deployment_state", deployment["deployment_state"]); err != nil {
+
+	// Send the manifest
+	err = client.SendManifest(ctx, dseq, provider, "deployment.yaml")
+	if err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("provider_address", deployment["provider_address"]); err != nil {
+
+	if err := d.Set("deployment_dseq", dseq); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("deployment_owner", os.Getenv("AKASH_ACCOUNT_ADDRESS")); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("deployment_state", "active"); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("provider_address", provider); err != nil {
 		return diag.FromErr(err)
 	}
 

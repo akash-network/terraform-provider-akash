@@ -1,5 +1,13 @@
 package types
 
+type BidsSliceWrapper struct {
+	BidWrappers []BidWrapper `json:"bids"`
+}
+
+type BidWrapper struct {
+	Bid Bid `json:"bid"`
+}
+
 type Bids []Bid
 
 type Bid struct {

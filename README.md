@@ -43,8 +43,8 @@ cd examples && terraform init && terraform apply --auto-approve
 
 ## Akash Testing
 
-
+### Close the Deployment
 
 ```shell
-./bin/akash tx deployment close --dseq <dseq> --owner <owner> --from $AKASH_KEY_NAME -y --fees 5000uakt
+./bin/akash tx deployment close --dseq <> --owner <> --from $AKASH_KEY_NAME -y --fees 5000uakt --gas auto
 ```
