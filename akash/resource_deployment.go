@@ -86,17 +86,21 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 	provider := bids[0].Id.Provider
 	tflog.Debug(ctx, fmt.Sprintf("Selected provider %s", provider))
 
+	tflog.Info(ctx, "Creating lease")
 	// Create a lease
-	err = client.CreateLease(ctx, dseq, provider)
+	lease, err := client.CreateLease(ctx, dseq, provider)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	tflog.Debug(ctx, fmt.Sprintf("Lease return: %s", lease))
 
+	tflog.Info(ctx, "Sending the manifest")
 	// Send the manifest
-	err = client.SendManifest(ctx, dseq, provider, "deployment.yaml")
+	res, err := client.SendManifest(ctx, dseq, provider, "deployment.yaml")
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	tflog.Debug(ctx, fmt.Sprintf("Result: %s", res))
 
 	if err := d.Set("deployment_dseq", dseq); err != nil {
 		return diag.FromErr(err)

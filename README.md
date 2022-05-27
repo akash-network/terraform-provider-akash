@@ -10,6 +10,7 @@ export AKASH_NET="https://raw.githubusercontent.com/ovrclk/net/master/mainnet"
 export AKASH_VERSION="$(curl -s "$AKASH_NET/version.txt")"
 export AKASH_CHAIN_ID="$(curl -s "$AKASH_NET/chain-id.txt")"
 export AKASH_NODE="http://akash.c29r3.xyz:80/rpc"
+export AKASH_HOME="$(realpath ~/.akash)"
 
 export TF_LOG_PROVIDER=DEBUG
 ```
@@ -46,5 +47,11 @@ cd examples && terraform init && terraform apply --auto-approve
 ### Close the Deployment
 
 ```shell
-./bin/akash tx deployment close --dseq <> --owner <> --from $AKASH_KEY_NAME -y --fees 5000uakt --gas auto
+./bin/akash tx deployment close --dseq <> --owner <> --from $AKASH_KEY_NAME -y --fees 800uakt --gas auto
 ```
+
+## Troubleshooting
+
+### `Error: error unmarshalling: invalid character '<' looking for beginning of value`
+If you encounter this error close the deployment and try again.
+If in development mode, try to increase the fees on deployment creation.

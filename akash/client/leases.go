@@ -8,12 +8,9 @@ import (
 	"os/exec"
 )
 
-func CreateLease(ctx context.Context, dseq string, provider string) error {
-	return transactionCreateLease(dseq, provider)
-}
-
-func transactionCreateLease(dseq string, provider string) error {
-	cmd := exec.Command(
+func CreateLease(ctx context.Context, dseq string, provider string) (string, error) {
+	cmd := exec.CommandContext(
+		ctx,
 		AKASH_BINARY,
 		"tx",
 		"market",
@@ -29,16 +26,23 @@ func transactionCreateLease(dseq string, provider string) error {
 		provider,
 		"--owner",
 		os.Getenv("AKASH_ACCOUNT_ADDRESS"),
+		"--from",
+		os.Getenv("AKASH_KEY_NAME"),
+		"--fees",
+		"5000uakt",
+		"--gas",
+		"auto",
+		"-y",
 		"-o",
 		"json",
 	)
 
 	var errb bytes.Buffer
 	cmd.Stderr = &errb
-	_, err := cmd.Output()
+	out, err := cmd.Output()
 	if err != nil {
-		return errors.New(errb.String())
+		return "", errors.New(errb.String())
 	}
 
-	return nil
+	return string(out), nil
 }

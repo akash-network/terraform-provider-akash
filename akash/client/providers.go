@@ -6,11 +6,13 @@ import (
 	"errors"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"os"
 	"os/exec"
 )
 
-func SendManifest(ctx context.Context, dseq string, provider string, manifestLocation string) error {
-	cmd := exec.Command(
+func SendManifest(ctx context.Context, dseq string, provider string, manifestLocation string) (string, error) {
+	cmd := exec.CommandContext(
+		ctx,
 		AKASH_BINARY,
 		"provider",
 		"send-manifest",
@@ -20,7 +22,9 @@ func SendManifest(ctx context.Context, dseq string, provider string, manifestLoc
 		"--provider",
 		provider,
 		"--home",
-		"~/.akash",
+		os.Getenv("AKASH_HOME"),
+		"--from",
+		os.Getenv("AKASH_KEY_NAME"),
 		"-o",
 		"json",
 	)
@@ -29,10 +33,10 @@ func SendManifest(ctx context.Context, dseq string, provider string, manifestLoc
 	cmd.Stderr = &errb
 	out, err := cmd.Output()
 	if err != nil {
-		return errors.New(errb.String())
+		return "", errors.New(errb.String())
 	}
 
 	tflog.Debug(ctx, fmt.Sprintf("Response contect: %s", out))
 
-	return nil
+	return string(out), nil
 }
