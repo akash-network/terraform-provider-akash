@@ -17,7 +17,7 @@ export TF_LOG_PROVIDER=DEBUG
 
 ## Clean terraform
 ```shell
-rm -rf examples/.terraform examples/.terraform.lock.hcl examples/terraform.tfstate examples/terraform.tfstate.backup
+make clean
 ```
 
 ## Build the provider
