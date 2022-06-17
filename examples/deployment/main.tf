@@ -7,6 +7,7 @@ terraform {
   }
 }
 
+/*
 data "akash_deployments" "all" {}
 
 output "all_deployments" {
@@ -19,4 +20,4 @@ output "all_active_deployments" {
     deployment.deployment_dseq => deployment
     if deployment.deployment_state == "active"
   }
-}
+}*/

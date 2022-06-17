@@ -6,6 +6,18 @@ BINARY=terraform-provider-${NAME}
 VERSION=0.3
 OS_ARCH=darwin_arm64
 
+# Akash variables
+export AKASH_KEY_NAME=terraform
+export AKASH_KEYRING_BACKEND=os
+export AKASH_ACCOUNT_ADDRESS=$$(./bin/akash keys show $(AKASH_KEY_NAME) -a)
+export AKASH_NET=https://raw.githubusercontent.com/ovrclk/net/master/mainnet
+export AKASH_VERSION=$$(curl -s "$(AKASH_NET)/version.txt")
+export AKASH_CHAIN_ID=$$(curl -s "$(AKASH_NET)/chain-id.txt")
+export AKASH_NODE=http://akash.c29r3.xyz:80/rpc
+export AKASH_HOME=$(realpath ~/.akash)
+
+export TF_LOG_PROVIDER=DEBUG
+
 default: install
 
 build:
@@ -34,4 +46,13 @@ test:
 	echo $(TEST) | xargs -t -n4 go test $(TESTARGS) -timeout=30s -parallel=4                    
 
 testacc: 
-	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout 120m   
+	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout 120m
+
+clean:
+	rm -rf examples/.terraform examples/.terraform.lock.hcl examples/terraform.tfstate examples/terraform.tfstate.backup
+
+develop:
+	make clean
+	go build -o terraform-provider-akash
+	make install
+	cd examples && terraform init && terraform apply --auto-approve
