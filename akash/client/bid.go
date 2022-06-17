@@ -22,6 +22,10 @@ func GetBids(ctx context.Context, dseq string, timeout time.Duration) (types.Bid
 		if err != nil {
 			tflog.Error(ctx, "Failed to query bid list")
 			tflog.Debug(ctx, fmt.Sprintf("%s", err))
+
+			if strings.Contains(err.Error(), "error unmarshalling") {
+				continue
+			}
 			return nil, err
 		}
 		tflog.Debug(ctx, fmt.Sprintf("Received %d bids", len(bids)))

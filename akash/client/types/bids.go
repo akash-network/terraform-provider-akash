@@ -11,7 +11,8 @@ type BidWrapper struct {
 type Bids []Bid
 
 type Bid struct {
-	Id BidId `json:"bid_id"`
+	Id     BidId `json:"bid_id"`
+	Amount int32 `json:"amount"`
 }
 
 type BidId struct {

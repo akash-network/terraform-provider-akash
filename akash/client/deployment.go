@@ -124,6 +124,7 @@ func transactionCreateDeployment() (string, error) {
 		"-y",
 		"--from",
 		os.Getenv("AKASH_KEY_NAME"),
+		"-y",
 		"-o json",
 	)
 

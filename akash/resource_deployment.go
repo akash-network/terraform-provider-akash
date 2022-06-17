@@ -63,6 +63,22 @@ func resourceDeployment() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"services": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"service_name": &schema.Schema{
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"service_uri": &schema.Schema{
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -75,24 +91,22 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 		return diag.FromErr(err)
 	}
 
-	bids, diagnostics, done := queryBids(ctx, err, dseq)
-	if done {
+	bids, diagnostics := queryBids(ctx, err, dseq)
+	if diagnostics != nil {
 		return diagnostics
 	}
 
 	provider := selectProvider(ctx, bids)
 
-	if diagnostics, done := createLease(ctx, err, dseq, provider); done {
+	if diagnostics := createLease(ctx, err, dseq, provider); diagnostics != nil {
 		return diagnostics
 	}
 
-	time.Sleep(5 * time.Second)
-
-	if diagnostics, done := sendManifest(ctx, err, dseq, provider); done {
+	if diagnostics := sendManifest(ctx, err, dseq, provider); diagnostics != nil {
 		return diagnostics
 	}
 
-	if diagnostics, done := setCreatedState(d, dseq, provider); done {
+	if diagnostics := setCreatedState(d, dseq, provider); diagnostics != nil {
 		return diagnostics
 	}
 
@@ -101,62 +115,67 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 	return resourceDeploymentRead(ctx, d, m)
 }
 
-func queryBids(ctx context.Context, err error, dseq string) (types.Bids, diag.Diagnostics, bool) {
+func queryBids(ctx context.Context, err error, dseq string) (types.Bids, diag.Diagnostics) {
 	tflog.Debug(ctx, "Querying available bids")
 	bids, err := client.GetBids(ctx, dseq, time.Minute)
 	if err != nil {
-		return nil, diag.FromErr(err), true
+		return nil, diag.FromErr(err)
 	}
 	if len(bids) == 0 {
-		return nil, diag.FromErr(errors.New("no bids on deployment")), true
+		return nil, diag.FromErr(errors.New("no bids on deployment"))
 	}
 	tflog.Info(ctx, fmt.Sprintf("Received %d bids in the deployment", len(bids)))
-	return bids, nil, false
+	return bids, nil
 }
 
-func sendManifest(ctx context.Context, err error, dseq string, provider string) (diag.Diagnostics, bool) {
+func sendManifest(ctx context.Context, err error, dseq string, provider string) diag.Diagnostics {
 	tflog.Info(ctx, "Sending the manifest")
 	// Send the manifest
 	res, err := client.SendManifest(ctx, dseq, provider, "deployment.yaml")
 	if err != nil {
-		return diag.FromErr(err), true
+		return diag.FromErr(err)
 	}
 	tflog.Debug(ctx, fmt.Sprintf("Result: %s", res))
-	return nil, false
+	return nil
 }
 
-func setCreatedState(d *schema.ResourceData, dseq string, provider string) (diag.Diagnostics, bool) {
+func setCreatedState(d *schema.ResourceData, dseq string, provider string) diag.Diagnostics {
 	if err := d.Set("deployment_dseq", dseq); err != nil {
-		return diag.FromErr(err), true
+		return diag.FromErr(err)
 	}
 	if err := d.Set("deployment_owner", os.Getenv("AKASH_ACCOUNT_ADDRESS")); err != nil {
-		return diag.FromErr(err), true
+		return diag.FromErr(err)
 	}
 	if err := d.Set("deployment_state", "active"); err != nil {
-		return diag.FromErr(err), true
+		return diag.FromErr(err)
 	}
 	if err := d.Set("provider_address", provider); err != nil {
-		return diag.FromErr(err), true
+		return diag.FromErr(err)
 	}
-	return nil, false
+	return nil
 }
 
 func selectProvider(ctx context.Context, bids types.Bids) string {
 	// Select the provider
-	provider := bids[0].Id.Provider
+	provider, err := client.FindCheapest(ctx, bids)
+	if err != nil {
+		diag.FromErr(err)
+		return ""
+	}
+
 	tflog.Debug(ctx, fmt.Sprintf("Selected provider %s", provider))
 	return provider
 }
 
-func createLease(ctx context.Context, err error, dseq string, provider string) (diag.Diagnostics, bool) {
+func createLease(ctx context.Context, err error, dseq string, provider string) diag.Diagnostics {
 	tflog.Info(ctx, "Creating lease")
 	// Create a lease
 	lease, err := client.CreateLease(ctx, dseq, provider)
 	if err != nil {
-		return diag.FromErr(err), true
+		return diag.FromErr(err)
 	}
 	tflog.Debug(ctx, fmt.Sprintf("Lease return: %s", lease))
-	return nil, false
+	return nil
 }
 
 func resourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
