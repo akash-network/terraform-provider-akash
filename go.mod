@@ -1,4 +1,4 @@
-module terraform-provider-hashicups
+module terraform-provider-akash
 
 go 1.18
 
