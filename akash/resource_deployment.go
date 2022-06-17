@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"os"
-	"strconv"
+	"strings"
 	"terraform-provider-hashicups/akash/client"
 	"terraform-provider-hashicups/akash/client/types"
 	"time"
@@ -14,6 +14,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
+
+const DeploymentIdDseq = 0
+const DeploymentIdOwner = 1
+const DeploymentIdProvider = 2
 
 func resourceDeployment() *schema.Resource {
 	return &schema.Resource{
@@ -110,7 +114,7 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 		return diagnostics
 	}
 
-	d.SetId(strconv.FormatInt(time.Now().Unix(), 10))
+	d.SetId(fmt.Sprintf("%s-%s-%s", dseq, os.Getenv("AKASH_ACCOUNT_ADDRESS"), provider))
 
 	return resourceDeploymentRead(ctx, d, m)
 }
@@ -182,10 +186,9 @@ func resourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m inter
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
-	//deploymentId := d.Id()
+	deploymentId := strings.Split(d.Id(), "-")
 
-	// TODO: Get the deployment by Id
-	deployment, err := client.GetDeployment(d.Get("deployment_dseq").(string), d.Get("deployment_owner").(string))
+	deployment, err := client.GetDeployment(deploymentId[DeploymentIdDseq], deploymentId[DeploymentIdOwner])
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -209,6 +212,25 @@ func resourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m inter
 		return diag.FromErr(err)
 	}
 	if err := d.Set("escrow_account_state", deployment["escrow_account_state"]); err != nil {
+		return diag.FromErr(err)
+	}
+
+	leaseStatus, err := client.GetLeaseStatus(ctx, deploymentId[DeploymentIdDseq], deploymentId[DeploymentIdProvider])
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	var services []interface{}
+
+	for key, value := range leaseStatus.Services {
+		service := make(map[string]interface{})
+		service["service_name"] = key
+		service["service_uri"] = strings.Join(value.URIs, " | ")
+
+		services = append(services, service)
+	}
+
+	if err := d.Set("services", services); err != nil {
 		return diag.FromErr(err)
 	}
 

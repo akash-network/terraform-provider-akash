@@ -3,6 +3,7 @@ package client
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -31,7 +32,7 @@ func SendManifest(ctx context.Context, dseq string, provider string, manifestLoc
 		"json",
 	)
 
-	tflog.Info(ctx, strings.Join(cmd.Args, " "))
+	tflog.Debug(ctx, strings.Join(cmd.Args, " "))
 
 	var errb bytes.Buffer
 	cmd.Stderr = &errb
@@ -45,8 +46,36 @@ func SendManifest(ctx context.Context, dseq string, provider string, manifestLoc
 	return string(out), nil
 }
 
-func GetLeaseStatus(ctx context.Context, dseq string, provider string) (types.LeaseStatus, error) {
+func GetLeaseStatus(ctx context.Context, dseq string, provider string) (*types.LeaseStatus, error) {
+	cmd := exec.CommandContext(
+		ctx,
+		AKASH_BINARY,
+		"provider",
+		"lease-status",
+		"--home",
+		os.Getenv("AKASH_HOME"),
+		"--dseq",
+		dseq,
+		"--provider",
+		provider,
+		"--from",
+		os.Getenv("AKASH_KEY_NAME"),
+	)
 
+	var errb bytes.Buffer
+	cmd.Stderr = &errb
+	out, err := cmd.Output()
+	if err != nil {
+		return nil, errors.New(errb.String())
+	}
+
+	leaseStatus := types.LeaseStatus{}
+	err = json.NewDecoder(strings.NewReader(string(out))).Decode(&leaseStatus)
+	if err != nil {
+		return nil, err
+	}
+
+	return &leaseStatus, nil
 }
 
 func FindCheapest(ctx context.Context, bids types.Bids) (string, error) {

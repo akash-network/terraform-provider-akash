@@ -55,13 +55,13 @@ make develop
 ### Close the Deployment
 
 ```shell
-./bin/akash tx deployment close --dseq 6361492 --owner $AKASH_ACCOUNT_ADDRESS --from $AKASH_KEY_NAME -y --fees 800uakt --gas auto
+./bin/akash tx deployment close --dseq <dseq> --owner $AKASH_ACCOUNT_ADDRESS --from $AKASH_KEY_NAME -y --fees 800uakt --gas auto
 ```
 
 ### Get deployment details
 
 ```shell
-./bin/akash provider lease-status --node $AKASH_NODE --home ~/.akash --dseq 6361492 --from $AKASH_KEY_NAME --provider <provider>
+./bin/akash provider lease-status --home ~/.akash --dseq <dseq> --provider <provider>
 ```
 
 ## Troubleshooting
