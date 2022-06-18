@@ -7,8 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"os"
 	"strings"
-	"terraform-provider-hashicups/akash/client"
-	"terraform-provider-hashicups/akash/client/types"
+	"terraform-provider-akash/akash/client"
+	"terraform-provider-akash/akash/client/types"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -258,7 +258,9 @@ func resourceDeploymentDelete(ctx context.Context, d *schema.ResourceData, m int
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
-	err := client.DeleteDeployment(d.Get("deployment_dseq").(string), d.Get("deployment_owner").(string))
+	deploymentId := strings.Split(d.Id(), "-")
+
+	err := client.DeleteDeployment(ctx, deploymentId[0], deploymentId[1])
 	if err != nil {
 		return diag.FromErr(err)
 	}

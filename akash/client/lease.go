@@ -13,7 +13,7 @@ import (
 func CreateLease(ctx context.Context, dseq string, provider string) (string, error) {
 	cmd := exec.CommandContext(
 		ctx,
-		AKASH_BINARY,
+		AkashBinary,
 		"tx",
 		"market",
 		"lease",

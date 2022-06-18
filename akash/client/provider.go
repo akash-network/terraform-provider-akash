@@ -10,13 +10,13 @@ import (
 	"os"
 	"os/exec"
 	"strings"
-	"terraform-provider-hashicups/akash/client/types"
+	"terraform-provider-akash/akash/client/types"
 )
 
 func SendManifest(ctx context.Context, dseq string, provider string, manifestLocation string) (string, error) {
 	cmd := exec.CommandContext(
 		ctx,
-		AKASH_BINARY,
+		AkashBinary,
 		"provider",
 		"send-manifest",
 		manifestLocation,
@@ -49,7 +49,7 @@ func SendManifest(ctx context.Context, dseq string, provider string, manifestLoc
 func GetLeaseStatus(ctx context.Context, dseq string, provider string) (*types.LeaseStatus, error) {
 	cmd := exec.CommandContext(
 		ctx,
-		AKASH_BINARY,
+		AkashBinary,
 		"provider",
 		"lease-status",
 		"--home",

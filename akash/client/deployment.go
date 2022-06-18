@@ -12,11 +12,11 @@ import (
 	"os"
 	"os/exec"
 	"strings"
-	"terraform-provider-hashicups/akash/client/types"
+	"terraform-provider-akash/akash/client/types"
 	"time"
 )
 
-const AKASH_BINARY = "../bin/akash"
+const AkashBinary = "../bin/akash"
 
 func GetDeployments() ([]map[string]interface{}, error) {
 	client := &http.Client{Timeout: 10 * time.Second}
@@ -114,7 +114,7 @@ func CreateDeployment(ctx context.Context, sdl string) (string, error) {
 // Perform the transaction to create the deployment and return either the DSEQ or an error.
 func transactionCreateDeployment() (string, error) {
 	cmd := exec.Command(
-		AKASH_BINARY,
+		AkashBinary,
 		"tx",
 		"deployment",
 		"create",
@@ -144,16 +144,34 @@ func transactionCreateDeployment() (string, error) {
 	return transaction.Logs[0].Events[0].Attributes.Get("dseq")
 }
 
-func DeleteDeployment(dseq string, owner string) error {
-	/*	out, err := exec.Command("akash tx deployment close --dseq " + dseq + " --owner " + owner + " --from pktminerwallet -y --fees 5000uakt").Output()
-		if err != nil {
-			return err
-		}
+func DeleteDeployment(ctx context.Context, dseq string, owner string) error {
+	cmd := exec.Command(
+		AkashBinary,
+		"tx",
+		"deployment",
+		"close",
+		"--dseq",
+		dseq,
+		"--owner",
+		owner,
+		"--from",
+		os.Getenv("AKASH_KEY_NAME"),
+		"--fees",
+		"800uakt",
+		"-y",
+		"--gas",
+		"auto",
+		"-o json",
+	)
 
-		err = json.NewDecoder(strings.NewReader(string(out))).Decode(&out)
-		if err != nil {
-			return err
-		}*/
+	var errb bytes.Buffer
+	cmd.Stderr = &errb
+	out, err := cmd.Output()
+	if err != nil {
+		return errors.New(errb.String())
+	}
+
+	tflog.Debug(ctx, fmt.Sprintf("Response: %s", out))
 
 	return nil
 }
