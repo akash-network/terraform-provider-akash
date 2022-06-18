@@ -3,7 +3,7 @@ package akash
 import (
 	"context"
 	"strconv"
-	"terraform-provider-hashicups/akash/client"
+	"terraform-provider-akash/akash/client"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"

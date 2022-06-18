@@ -25,21 +25,11 @@ make clean
 Run the following command to build the provider
 
 ```shell
+# Run the following command to build the provider
 go build -o terraform-provider-akash
-```
 
-## Test sample configuration
-
-First, build and install the provider.
-
-```shell
+# Build and install the provider
 make install
-```
-
-Then, run the following command to initialize the workspace and apply the sample configuration.
-
-```shell
-cd examples && terraform init && terraform apply --auto-approve
 ```
 
 ## Development Script

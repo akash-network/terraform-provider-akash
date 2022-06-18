@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"os/exec"
 	"strings"
-	"terraform-provider-hashicups/akash/client/types"
+	"terraform-provider-akash/akash/client/types"
 	"time"
 )
 
@@ -39,7 +39,7 @@ func GetBids(ctx context.Context, dseq string, timeout time.Duration) (types.Bid
 
 func queryBidList(dseq string) (types.Bids, error) {
 	cmd := exec.Command(
-		AKASH_BINARY,
+		AkashBinary,
 		"query",
 		"market",
 		"bid",
