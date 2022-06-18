@@ -2,7 +2,7 @@ package client
 
 import (
 	"context"
-	"terraform-provider-hashicups/akash/client/types"
+	"terraform-provider-akash/akash/client/types"
 	"testing"
 )
 
