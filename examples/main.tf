@@ -21,6 +21,6 @@ output "my_deployment" {
   value = akash_deployment.my_deployment
 }
 
-/*output "akash_deployments" {
-  value = module.akash_deployments.all_active_deployments
-}*/
+#output "akash_deployments" {
+#  value = module.akash_deployments.all_active_deployments
+#}

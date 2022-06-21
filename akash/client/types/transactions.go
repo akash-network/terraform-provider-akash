@@ -5,6 +5,7 @@ import "errors"
 type Transaction struct {
 	Height string           `json:"height"`
 	Logs   []TransactionLog `json:"logs"`
+	RawLog string           `json:"raw_log"`
 }
 
 type TransactionLog struct {

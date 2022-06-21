@@ -30,6 +30,8 @@ go build -o terraform-provider-akash
 
 # Build and install the provider
 make install
+
+cd examples && terraform init && terraform apply --auto-approve
 ```
 
 ## Development Script

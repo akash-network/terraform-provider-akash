@@ -7,8 +7,7 @@ terraform {
   }
 }
 
-/*
-data "akash_deployments" "all" {}
+/*data "akash_deployments" "all" {}
 
 output "all_deployments" {
   value = data.akash_deployments.all.deployments

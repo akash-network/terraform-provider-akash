@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
@@ -90,17 +89,11 @@ func GetDeployment(dseq string, owner string) (map[string]interface{}, error) {
 
 // CreateDeployment TODO: Extract the different operations inside here to different methods on different clients.
 // Transactions, Deployments...
-func CreateDeployment(ctx context.Context, sdl string) (string, error) {
-	tflog.Debug(ctx, "Creating temporary deployment file")
-
-	err := ioutil.WriteFile("deployment.yaml", []byte(sdl), 0666)
-	if err != nil {
-		return "", err
-	}
+func CreateDeployment(ctx context.Context, manifestLocation string) (string, error) {
 
 	tflog.Debug(ctx, "Creating deployment")
 	// Create deployment using the file created with the SDL
-	dseq, err := transactionCreateDeployment()
+	dseq, err := transactionCreateDeployment(ctx, manifestLocation)
 	if err != nil {
 		tflog.Error(ctx, "Failed creating deployment")
 		tflog.Debug(ctx, fmt.Sprintf("%s", err))
@@ -112,13 +105,13 @@ func CreateDeployment(ctx context.Context, sdl string) (string, error) {
 }
 
 // Perform the transaction to create the deployment and return either the DSEQ or an error.
-func transactionCreateDeployment() (string, error) {
+func transactionCreateDeployment(ctx context.Context, manifestLocation string) (string, error) {
 	cmd := exec.Command(
 		AkashBinary,
 		"tx",
 		"deployment",
 		"create",
-		"deployment.yaml",
+		manifestLocation,
 		"--fees",
 		"5000uakt",
 		"-y",
@@ -141,6 +134,13 @@ func transactionCreateDeployment() (string, error) {
 		return "", err
 	}
 
+	tflog.Debug(ctx, strings.Join(cmd.Args, " "))
+
+	if len(transaction.Logs) == 0 {
+		tflog.Debug(ctx, fmt.Sprintf("Error result: %s", out))
+		return "", errors.New(fmt.Sprintf("something went wrong: %s", transaction.RawLog))
+	}
+
 	return transaction.Logs[0].Events[0].Attributes.Get("dseq")
 }
 
@@ -161,6 +161,38 @@ func DeleteDeployment(ctx context.Context, dseq string, owner string) error {
 		"-y",
 		"--gas",
 		"auto",
+		"-o json",
+	)
+
+	var errb bytes.Buffer
+	cmd.Stderr = &errb
+	out, err := cmd.Output()
+	if err != nil {
+		return errors.New(errb.String())
+	}
+
+	tflog.Debug(ctx, fmt.Sprintf("Response: %s", out))
+
+	return nil
+}
+
+// UpdateDeployment TODO: Change sdlFileLocation to sdl file object
+func UpdateDeployment(ctx context.Context, dseq string, manifestLocation string) error {
+	cmd := exec.Command(
+		AkashBinary,
+		"tx",
+		"deployment",
+		"update",
+		manifestLocation,
+		"--dseq",
+		dseq,
+		"--from",
+		os.Getenv("AKASH_KEY_NAME"),
+		"--gas-prices=0.025uakt",
+		"-y",
+		"--gas",
+		"auto",
+		"--gas-adjustment=1.15",
 		"-o json",
 	)
 

@@ -7,8 +7,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"os/exec"
 	"strings"
+	"terraform-provider-akash/akash/client/cli"
 	"terraform-provider-akash/akash/client/types"
 	"time"
 )
@@ -18,10 +18,10 @@ func GetBids(ctx context.Context, dseq string, timeout time.Duration) (types.Bid
 	for timeout > 0 && len(bids) <= 0 {
 		startTime := time.Now()
 		// Check bids on deployments and choose one
-		currentBids, err := queryBidList(dseq)
+		currentBids, err := queryBidList(ctx, dseq)
 		if err != nil {
 			tflog.Error(ctx, "Failed to query bid list")
-			tflog.Debug(ctx, fmt.Sprintf("%s", err))
+			tflog.Debug(ctx, fmt.Sprintf("Error: %s", err))
 
 			if strings.Contains(err.Error(), "error unmarshalling") {
 				continue
@@ -37,18 +37,10 @@ func GetBids(ctx context.Context, dseq string, timeout time.Duration) (types.Bid
 	return bids, nil
 }
 
-func queryBidList(dseq string) (types.Bids, error) {
-	cmd := exec.Command(
-		AkashBinary,
-		"query",
-		"market",
-		"bid",
-		"list",
-		"--dseq",
-		dseq,
-		"-o",
-		"json",
-	)
+func queryBidList(ctx context.Context, dseq string) (types.Bids, error) {
+	cmd := cli.AkashCli().Query().Market().Bid().List().Dseq(dseq).OutputJson().AsCmd()
+
+	tflog.Debug(ctx, strings.Join(cmd.Args, " "))
 
 	var errb bytes.Buffer
 	cmd.Stderr = &errb

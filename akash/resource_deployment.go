@@ -90,26 +90,27 @@ func resourceDeployment() *schema.Resource {
 func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	// TODO: check context for cancellation.
 
-	dseq, err := client.CreateDeployment(ctx, d.Get("sdl").(string))
+	// TODO: Manifest location not as type string.
+	manifestLocation, err := CreateTemporaryDeploymentFile(ctx, d.Get("sdl").(string))
+
+	dseq, err := client.CreateDeployment(ctx, manifestLocation)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	bids, diagnostics := queryBids(ctx, err, dseq)
+	bids, diagnostics := queryBids(ctx, dseq)
 	if diagnostics != nil {
 		return diagnostics
 	}
 
 	provider := selectProvider(ctx, bids)
 
-	if diagnostics := createLease(ctx, err, dseq, provider); diagnostics != nil {
+	if diagnostics := createLease(ctx, dseq, provider); diagnostics != nil {
 		return diagnostics
 	}
-
-	if diagnostics := sendManifest(ctx, err, dseq, provider); diagnostics != nil {
+	if diagnostics := sendManifest(ctx, dseq, provider, manifestLocation); diagnostics != nil {
 		return diagnostics
 	}
-
 	if diagnostics := setCreatedState(d, dseq, provider); diagnostics != nil {
 		return diagnostics
 	}
@@ -119,7 +120,7 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 	return resourceDeploymentRead(ctx, d, m)
 }
 
-func queryBids(ctx context.Context, err error, dseq string) (types.Bids, diag.Diagnostics) {
+func queryBids(ctx context.Context, dseq string) (types.Bids, diag.Diagnostics) {
 	tflog.Debug(ctx, "Querying available bids")
 	bids, err := client.GetBids(ctx, dseq, time.Minute)
 	if err != nil {
@@ -132,10 +133,10 @@ func queryBids(ctx context.Context, err error, dseq string) (types.Bids, diag.Di
 	return bids, nil
 }
 
-func sendManifest(ctx context.Context, err error, dseq string, provider string) diag.Diagnostics {
+func sendManifest(ctx context.Context, dseq string, provider string, manifestLocation string) diag.Diagnostics {
 	tflog.Info(ctx, "Sending the manifest")
 	// Send the manifest
-	res, err := client.SendManifest(ctx, dseq, provider, "deployment.yaml")
+	res, err := client.SendManifest(ctx, dseq, provider, manifestLocation)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -171,7 +172,7 @@ func selectProvider(ctx context.Context, bids types.Bids) string {
 	return provider
 }
 
-func createLease(ctx context.Context, err error, dseq string, provider string) diag.Diagnostics {
+func createLease(ctx context.Context, dseq string, provider string) diag.Diagnostics {
 	tflog.Info(ctx, "Creating lease")
 	// Create a lease
 	lease, err := client.CreateLease(ctx, dseq, provider)
@@ -239,11 +240,20 @@ func resourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m inter
 
 func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	deploymentId := d.Id()
-	fmt.Println(deploymentId)
+
+	dseq := string(deploymentId[DeploymentIdDseq])
+	provider := string(deploymentId[DeploymentIdProvider])
 
 	if d.HasChange("sdl") {
 
 		// Update the deployment
+		if err := client.UpdateDeployment(ctx, dseq, "/var/tmp/deployment.yaml"); err != nil {
+			return diag.FromErr(err)
+		}
+
+		if diagnostics := sendManifest(ctx, dseq, provider, "/var/tmp/deployment.yaml"); diagnostics != nil {
+			return diagnostics
+		}
 
 		err := d.Set("last_updated", time.Now().Format(time.RFC850))
 		if err != nil {
