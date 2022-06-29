@@ -1,50 +1,27 @@
 package client
 
 import (
-	"bytes"
 	"context"
-	"errors"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"os"
-	"os/exec"
 	"strings"
+	"terraform-provider-akash/akash/client/cli"
 )
 
 func CreateLease(ctx context.Context, dseq string, provider string) (string, error) {
-	cmd := exec.CommandContext(
-		ctx,
-		AkashBinary,
-		"tx",
-		"market",
-		"lease",
-		"create",
-		"--dseq",
-		dseq,
-		"--gseq",
-		"1",
-		"--oseq",
-		"1",
-		"--provider",
-		provider,
-		"--owner",
-		os.Getenv("AKASH_ACCOUNT_ADDRESS"),
-		"--from",
-		os.Getenv("AKASH_KEY_NAME"),
-		"--gas=auto",
-		"--gas-adjustment=1.15",
-		"--gas-prices=0.025uakt",
-		"-y",
-		"-o",
-		"json",
-	)
+	cmd := cli.AkashCli().Tx().Market().Lease().Create().Dseq(dseq).Gseq("1").Oseq("1").
+		Provider(provider).Owner(os.Getenv("AKASH_ACCOUNT_ADDRESS")).From(os.Getenv("AKASH_KEY_NAME")).
+		DefaultGas().OutputJson()
 
-	tflog.Info(ctx, strings.Join(cmd.Args, " "))
+	tflog.Info(ctx, strings.Join(cmd.AsCmd().Args, " "))
 
-	var errb bytes.Buffer
-	cmd.Stderr = &errb
-	out, err := cmd.Output()
+	out, err := cmd.Raw()
 	if err != nil {
-		return "", errors.New(errb.String())
+		if strings.Contains(err.Error(), "error unmarshalling") {
+			return CreateLease(ctx, dseq, provider)
+		}
+
+		return "", err
 	}
 
 	return string(out), nil

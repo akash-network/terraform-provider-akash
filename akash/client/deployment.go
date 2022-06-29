@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"terraform-provider-akash/akash/client/cli"
 	"terraform-provider-akash/akash/client/types"
 	"time"
 )
@@ -87,8 +88,6 @@ func GetDeployment(dseq string, owner string) (map[string]interface{}, error) {
 	return d, nil
 }
 
-// CreateDeployment TODO: Extract the different operations inside here to different methods on different clients.
-// Transactions, Deployments...
 func CreateDeployment(ctx context.Context, manifestLocation string) (string, error) {
 
 	tflog.Debug(ctx, "Creating deployment")
@@ -106,38 +105,16 @@ func CreateDeployment(ctx context.Context, manifestLocation string) (string, err
 
 // Perform the transaction to create the deployment and return either the DSEQ or an error.
 func transactionCreateDeployment(ctx context.Context, manifestLocation string) (string, error) {
-	cmd := exec.Command(
-		AkashBinary,
-		"tx",
-		"deployment",
-		"create",
-		manifestLocation,
-		"--fees",
-		"5000uakt",
-		"-y",
-		"--from",
-		os.Getenv("AKASH_KEY_NAME"),
-		"-y",
-		"-o json",
-	)
-
-	var errb bytes.Buffer
-	cmd.Stderr = &errb
-	out, err := cmd.Output()
-	if err != nil {
-		return "", errors.New(errb.String())
-	}
+	cmd := cli.AkashCli().Tx().Deployment().Create().Manifest(manifestLocation).
+		Fees(5000).AutoAccept().From(os.Getenv("AKASH_KEY_NAME")).OutputJson()
+	tflog.Debug(ctx, strings.Join(cmd.AsCmd().Args, " "))
 
 	transaction := types.Transaction{}
-	err = json.NewDecoder(strings.NewReader(string(out))).Decode(&transaction)
-	if err != nil {
+	if err := cmd.DecodeJson(&transaction); err != nil {
 		return "", err
 	}
 
-	tflog.Debug(ctx, strings.Join(cmd.Args, " "))
-
 	if len(transaction.Logs) == 0 {
-		tflog.Debug(ctx, fmt.Sprintf("Error result: %s", out))
 		return "", errors.New(fmt.Sprintf("something went wrong: %s", transaction.RawLog))
 	}
 
@@ -145,30 +122,13 @@ func transactionCreateDeployment(ctx context.Context, manifestLocation string) (
 }
 
 func DeleteDeployment(ctx context.Context, dseq string, owner string) error {
-	cmd := exec.Command(
-		AkashBinary,
-		"tx",
-		"deployment",
-		"close",
-		"--dseq",
-		dseq,
-		"--owner",
-		owner,
-		"--from",
-		os.Getenv("AKASH_KEY_NAME"),
-		"--fees",
-		"800uakt",
-		"-y",
-		"--gas",
-		"auto",
-		"-o json",
-	)
 
-	var errb bytes.Buffer
-	cmd.Stderr = &errb
-	out, err := cmd.Output()
+	cmd := cli.AkashCli().Tx().Deployment().Close().
+		Dseq(dseq).Owner(owner).From(os.Getenv("AKASH_KEY_NAME")).Fees(5000).AutoAccept().OutputJson()
+
+	out, err := cmd.Raw()
 	if err != nil {
-		return errors.New(errb.String())
+		return err
 	}
 
 	tflog.Debug(ctx, fmt.Sprintf("Response: %s", out))

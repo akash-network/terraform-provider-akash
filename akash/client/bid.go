@@ -1,10 +1,7 @@
 package client
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"strings"
@@ -38,20 +35,12 @@ func GetBids(ctx context.Context, dseq string, timeout time.Duration) (types.Bid
 }
 
 func queryBidList(ctx context.Context, dseq string) (types.Bids, error) {
-	cmd := cli.AkashCli().Query().Market().Bid().List().Dseq(dseq).OutputJson().AsCmd()
+	cmd := cli.AkashCli().Query().Market().Bid().List().Dseq(dseq).OutputJson()
 
-	tflog.Debug(ctx, strings.Join(cmd.Args, " "))
-
-	var errb bytes.Buffer
-	cmd.Stderr = &errb
-	out, err := cmd.Output()
-	if err != nil {
-		return nil, errors.New(errb.String())
-	}
+	tflog.Debug(ctx, strings.Join(cmd.AsCmd().Args, " "))
 
 	bidsSliceWrapper := types.BidsSliceWrapper{}
-	err = json.NewDecoder(strings.NewReader(string(out))).Decode(&bidsSliceWrapper)
-	if err != nil {
+	if err := cmd.DecodeJson(&bidsSliceWrapper); err != nil {
 		return nil, err
 	}
 
