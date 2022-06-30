@@ -1,44 +1,27 @@
 package client
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"os"
-	"os/exec"
 	"strings"
+	"terraform-provider-akash/akash/client/cli"
 	"terraform-provider-akash/akash/client/types"
 )
 
 func SendManifest(ctx context.Context, dseq string, provider string, manifestLocation string) (string, error) {
-	cmd := exec.CommandContext(
-		ctx,
-		AkashBinary,
-		"provider",
-		"send-manifest",
-		manifestLocation,
-		"--dseq",
-		dseq,
-		"--provider",
-		provider,
-		"--home",
-		os.Getenv("AKASH_HOME"),
-		"--from",
-		os.Getenv("AKASH_KEY_NAME"),
-		"-o",
-		"json",
-	)
 
-	tflog.Debug(ctx, strings.Join(cmd.Args, " "))
+	cmd := cli.AkashCli().Provider().SendManifest(manifestLocation).
+		SetDseq(dseq).SetProvider(provider).SetHome(os.Getenv("AKASH_HOME")).
+		SetFrom(os.Getenv("AKASH_KEY_NAME")).OutputJson()
 
-	var errb bytes.Buffer
-	cmd.Stderr = &errb
-	out, err := cmd.Output()
+	tflog.Debug(ctx, strings.Join(cmd.AsCmd().Args, " "))
+
+	out, err := cmd.Raw()
 	if err != nil {
-		return "", errors.New(errb.String())
+		return "", err
 	}
 
 	tflog.Debug(ctx, fmt.Sprintf("Response content: %s", out))
@@ -47,30 +30,15 @@ func SendManifest(ctx context.Context, dseq string, provider string, manifestLoc
 }
 
 func GetLeaseStatus(ctx context.Context, dseq string, provider string) (*types.LeaseStatus, error) {
-	cmd := exec.CommandContext(
-		ctx,
-		AkashBinary,
-		"provider",
-		"lease-status",
-		"--home",
-		os.Getenv("AKASH_HOME"),
-		"--dseq",
-		dseq,
-		"--provider",
-		provider,
-		"--from",
-		os.Getenv("AKASH_KEY_NAME"),
-	)
 
-	var errb bytes.Buffer
-	cmd.Stderr = &errb
-	out, err := cmd.Output()
-	if err != nil {
-		return nil, errors.New(errb.String())
-	}
+	cmd := cli.AkashCli().Provider().LeaseStatus().
+		SetHome(os.Getenv("AKASH_HOME")).SetDseq(dseq).SetProvider(provider).
+		SetFrom(os.Getenv("AKASH_KEY_NAME"))
+
+	tflog.Info(ctx, strings.Join(cmd.AsCmd().Args, " "))
 
 	leaseStatus := types.LeaseStatus{}
-	err = json.NewDecoder(strings.NewReader(string(out))).Decode(&leaseStatus)
+	err := cmd.DecodeJson(&leaseStatus)
 	if err != nil {
 		return nil, err
 	}

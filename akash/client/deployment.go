@@ -1,7 +1,6 @@
 package client
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -9,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"net/http"
 	"os"
-	"os/exec"
 	"strings"
 	"terraform-provider-akash/akash/client/cli"
 	"terraform-provider-akash/akash/client/types"
@@ -106,7 +104,8 @@ func CreateDeployment(ctx context.Context, manifestLocation string) (string, err
 // Perform the transaction to create the deployment and return either the DSEQ or an error.
 func transactionCreateDeployment(ctx context.Context, manifestLocation string) (string, error) {
 	cmd := cli.AkashCli().Tx().Deployment().Create().Manifest(manifestLocation).
-		Fees(5000).AutoAccept().From(os.Getenv("AKASH_KEY_NAME")).OutputJson()
+		SetFees(5000).AutoAccept().SetFrom(os.Getenv("AKASH_KEY_NAME")).OutputJson()
+
 	tflog.Debug(ctx, strings.Join(cmd.AsCmd().Args, " "))
 
 	transaction := types.Transaction{}
@@ -124,7 +123,10 @@ func transactionCreateDeployment(ctx context.Context, manifestLocation string) (
 func DeleteDeployment(ctx context.Context, dseq string, owner string) error {
 
 	cmd := cli.AkashCli().Tx().Deployment().Close().
-		Dseq(dseq).Owner(owner).From(os.Getenv("AKASH_KEY_NAME")).Fees(5000).AutoAccept().OutputJson()
+		SetDseq(dseq).SetOwner(owner).SetFrom(os.Getenv("AKASH_KEY_NAME")).
+		DefaultGas().AutoAccept().OutputJson()
+
+	tflog.Debug(ctx, strings.Join(cmd.AsCmd().Args, " "))
 
 	out, err := cmd.Raw()
 	if err != nil {
@@ -136,31 +138,15 @@ func DeleteDeployment(ctx context.Context, dseq string, owner string) error {
 	return nil
 }
 
-// UpdateDeployment TODO: Change sdlFileLocation to sdl file object
 func UpdateDeployment(ctx context.Context, dseq string, manifestLocation string) error {
-	cmd := exec.Command(
-		AkashBinary,
-		"tx",
-		"deployment",
-		"update",
-		manifestLocation,
-		"--dseq",
-		dseq,
-		"--from",
-		os.Getenv("AKASH_KEY_NAME"),
-		"--gas-prices=0.025uakt",
-		"-y",
-		"--gas",
-		"auto",
-		"--gas-adjustment=1.15",
-		"-o json",
-	)
+	cmd := cli.AkashCli().Tx().Deployment().Update().Manifest(manifestLocation).
+		SetDseq(dseq).SetFrom(os.Getenv("AKASH_KEY_NAME")).DefaultGas().AutoAccept().OutputJson()
 
-	var errb bytes.Buffer
-	cmd.Stderr = &errb
-	out, err := cmd.Output()
+	tflog.Debug(ctx, strings.Join(cmd.AsCmd().Args, " "))
+
+	out, err := cmd.Raw()
 	if err != nil {
-		return errors.New(errb.String())
+		return err
 	}
 
 	tflog.Debug(ctx, fmt.Sprintf("Response: %s", out))

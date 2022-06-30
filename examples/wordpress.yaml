@@ -3,7 +3,7 @@ version: "2.0"
 
 services:
   wordpress:
-    image: wordpress:5.9.2-apache
+    image: wordpress:5.9.1-apache
     env:
       - WORDPRESS_DB_HOST=db
       - WORDPRESS_DB_USER=exampleuser

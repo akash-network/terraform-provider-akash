@@ -106,12 +106,24 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 	provider := selectProvider(ctx, bids)
 
 	if diagnostics := createLease(ctx, dseq, provider); diagnostics != nil {
+		err := client.DeleteDeployment(ctx, dseq, os.Getenv("AKASH_ACCOUNT_ADDRESS"))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 		return diagnostics
 	}
 	if diagnostics := sendManifest(ctx, dseq, provider, manifestLocation); diagnostics != nil {
+		err := client.DeleteDeployment(ctx, dseq, os.Getenv("AKASH_ACCOUNT_ADDRESS"))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 		return diagnostics
 	}
 	if diagnostics := setCreatedState(d, dseq, provider); diagnostics != nil {
+		err := client.DeleteDeployment(ctx, dseq, os.Getenv("AKASH_ACCOUNT_ADDRESS"))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 		return diagnostics
 	}
 
@@ -239,23 +251,24 @@ func resourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m inter
 }
 
 func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	deploymentId := d.Id()
+	deploymentId := strings.Split(d.Id(), "-")
 
-	dseq := string(deploymentId[DeploymentIdDseq])
-	provider := string(deploymentId[DeploymentIdProvider])
+	dseq := deploymentId[DeploymentIdDseq]
+	provider := deploymentId[DeploymentIdProvider]
 
 	if d.HasChange("sdl") {
+		manifestLocation, err := CreateTemporaryDeploymentFile(ctx, d.Get("sdl").(string))
 
 		// Update the deployment
-		if err := client.UpdateDeployment(ctx, dseq, "/var/tmp/deployment.yaml"); err != nil {
+		if err := client.UpdateDeployment(ctx, dseq, manifestLocation); err != nil {
 			return diag.FromErr(err)
 		}
 
-		if diagnostics := sendManifest(ctx, dseq, provider, "/var/tmp/deployment.yaml"); diagnostics != nil {
+		if diagnostics := sendManifest(ctx, dseq, provider, manifestLocation); diagnostics != nil {
 			return diagnostics
 		}
 
-		err := d.Set("last_updated", time.Now().Format(time.RFC850))
+		err = d.Set("last_updated", time.Now().Format(time.RFC850))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -270,7 +283,7 @@ func resourceDeploymentDelete(ctx context.Context, d *schema.ResourceData, m int
 
 	deploymentId := strings.Split(d.Id(), "-")
 
-	err := client.DeleteDeployment(ctx, deploymentId[0], deploymentId[1])
+	err := client.DeleteDeployment(ctx, deploymentId[DeploymentIdDseq], deploymentId[DeploymentIdOwner])
 	if err != nil {
 		return diag.FromErr(err)
 	}

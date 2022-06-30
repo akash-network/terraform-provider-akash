@@ -9,9 +9,9 @@ import (
 )
 
 func CreateLease(ctx context.Context, dseq string, provider string) (string, error) {
-	cmd := cli.AkashCli().Tx().Market().Lease().Create().Dseq(dseq).Gseq("1").Oseq("1").
-		Provider(provider).Owner(os.Getenv("AKASH_ACCOUNT_ADDRESS")).From(os.Getenv("AKASH_KEY_NAME")).
-		DefaultGas().OutputJson()
+	cmd := cli.AkashCli().Tx().Market().Lease().Create().DefaultSeqs(dseq).
+		SetProvider(provider).SetOwner(os.Getenv("AKASH_ACCOUNT_ADDRESS")).SetFrom(os.Getenv("AKASH_KEY_NAME")).
+		DefaultGas().AutoAccept().OutputJson()
 
 	tflog.Info(ctx, strings.Join(cmd.AsCmd().Args, " "))
 

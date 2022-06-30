@@ -1,5 +1,21 @@
 # Terraform Provider Akash
 
+## Usage
+
+### Environment Variables
+Make sure you have the following environment variables in your machine in order for the provider to work correctly.
+
+| Variable                | Description                                                      |
+|-------------------------|------------------------------------------------------------------|
+| `AKASH_KEY_NAME`        | Name of your keychain.                                           |
+| `AKASH_KEYRING_BACKEND` | Backend of the keyring.                                          |
+| `AKASH_ACCOUNT_ADDRESS` | Address of your account.                                         |
+| `AKASH_NET`             | Network to use, usually the mainnet.                             |
+| `AKASH_VERSION`         | Version of the network.                                          |
+| `AKASH_CHAIN_ID`        | Chain id of the network.                                         |
+| `AKASH_NODE`            | Akash node to connect to.                                        |
+| `AKASH_HOME`            | Absolute path to the Akash's home folder, usually under ~/.akash |
+
 ## Development environment setup
 
 ```shell
@@ -32,14 +48,6 @@ go build -o terraform-provider-akash
 make install
 
 cd examples && terraform init && terraform apply --auto-approve
-```
-
-## Development Script
-
-You can run all the commands below by executing:
-
-```shell
-make develop
 ```
 
 ## Akash Testing

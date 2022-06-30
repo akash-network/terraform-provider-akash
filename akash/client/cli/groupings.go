@@ -1,9 +1,9 @@
 package cli
 
 func (c AkashCommand) DefaultGas() AkashCommand {
-	return c.GasAuto().GasAdjustment().GasPrices()
+	return c.GasAuto().SetGasAdjustment().SetGasPrices()
 }
 
 func (c AkashCommand) DefaultSeqs(dseq string) AkashCommand {
-	return c.Dseq(dseq).Gseq("1").Oseq("1")
+	return c.SetDseq(dseq).SetGseq("1").SetOseq("1")
 }

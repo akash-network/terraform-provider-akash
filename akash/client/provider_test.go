@@ -12,7 +12,7 @@ func TestFindCheapestReturnsErrorOnEmptyBidsList(t *testing.T) {
 	expectedError := "empty bid slice"
 
 	if provider != "" {
-		t.Logf("Provider should be empty string, is \"%s\" instead", provider)
+		t.Logf("SetProvider should be empty string, is \"%s\" instead", provider)
 		t.Fail()
 	}
 

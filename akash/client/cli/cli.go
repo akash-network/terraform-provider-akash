@@ -20,6 +20,18 @@ func (c AkashCommand) Create() AkashCommand {
 	return c.append("create")
 }
 
+func (c AkashCommand) Update() AkashCommand {
+	return c.append("update")
+}
+
+func (c AkashCommand) LeaseStatus() AkashCommand {
+	return c.append("lease-status")
+}
+
+func (c AkashCommand) SendManifest(path string) AkashCommand {
+	return c.append("send-manifest").append(path)
+}
+
 func (c AkashCommand) Close() AkashCommand {
 	return c.append("close")
 }
@@ -30,6 +42,10 @@ func (c AkashCommand) Query() AkashCommand {
 
 func (c AkashCommand) Market() AkashCommand {
 	return c.append("market")
+}
+
+func (c AkashCommand) Provider() AkashCommand {
+	return c.append("provider")
 }
 
 func (c AkashCommand) Bid() AkashCommand {
@@ -48,51 +64,57 @@ func (c AkashCommand) Manifest(path string) AkashCommand {
 	return c.append(path)
 }
 
-func (c AkashCommand) OutputJson() AkashCommand {
-	return c.append("-o").append("json")
-}
+/** OPTIONS **/
 
-func (c AkashCommand) Dseq(dseq string) AkashCommand {
+func (c AkashCommand) SetDseq(dseq string) AkashCommand {
 	return c.append("--dseq").append(dseq)
 }
 
-func (c AkashCommand) Oseq(oseq string) AkashCommand {
+func (c AkashCommand) SetOseq(oseq string) AkashCommand {
 	return c.append("--oseq").append(oseq)
 }
 
-func (c AkashCommand) Gseq(gseq string) AkashCommand {
+func (c AkashCommand) SetGseq(gseq string) AkashCommand {
 	return c.append("--gseq").append(gseq)
 }
 
-func (c AkashCommand) Provider(provider string) AkashCommand {
+func (c AkashCommand) SetProvider(provider string) AkashCommand {
 	return c.append("--provider").append(provider)
 }
 
-func (c AkashCommand) Owner(owner string) AkashCommand {
+func (c AkashCommand) SetHome(home string) AkashCommand {
+	return c.append("--home").append(home)
+}
+
+func (c AkashCommand) SetOwner(owner string) AkashCommand {
 	return c.append("--owner").append(owner)
 }
 
-func (c AkashCommand) Fees(amount int64) AkashCommand {
+func (c AkashCommand) SetFees(amount int64) AkashCommand {
 	return c.append("--fees").append(fmt.Sprintf("%duakt", amount))
 }
 
-func (c AkashCommand) AutoAccept() AkashCommand {
-	return c.append("-y")
-}
-
-func (c AkashCommand) From(key string) AkashCommand {
+func (c AkashCommand) SetFrom(key string) AkashCommand {
 	return c.append("--from").append(key)
 }
 
 func (c AkashCommand) GasAuto() AkashCommand {
 	return c.append("--gas=auto")
 }
-func (c AkashCommand) GasAdjustment() AkashCommand {
+func (c AkashCommand) SetGasAdjustment() AkashCommand {
 	return c.append("--gas-adjustment=1.15")
 }
 
-func (c AkashCommand) GasPrices() AkashCommand {
+func (c AkashCommand) SetGasPrices() AkashCommand {
 	return c.append("--gas-prices=0.025uakt")
+}
+
+func (c AkashCommand) AutoAccept() AkashCommand {
+	return c.append("-y")
+}
+
+func (c AkashCommand) OutputJson() AkashCommand {
+	return c.append("-o").append("json")
 }
 
 func (c AkashCommand) Headless() []string {

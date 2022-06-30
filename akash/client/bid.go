@@ -35,7 +35,7 @@ func GetBids(ctx context.Context, dseq string, timeout time.Duration) (types.Bid
 }
 
 func queryBidList(ctx context.Context, dseq string) (types.Bids, error) {
-	cmd := cli.AkashCli().Query().Market().Bid().List().Dseq(dseq).OutputJson()
+	cmd := cli.AkashCli().Query().Market().Bid().List().SetDseq(dseq).OutputJson()
 
 	tflog.Debug(ctx, strings.Join(cmd.AsCmd().Args, " "))
 
