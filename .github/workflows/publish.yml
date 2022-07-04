@@ -16,7 +16,7 @@ jobs:
     - uses: actions/checkout@v3
     - name: Set version
       run: |
-        echo ::set-output name=VERSION::$(make print-VERSION)
+        echo "::set-output name=VERSION::$(make print-VERSION)"
         echo ${{ steps.version.outputs.VERSION }}
     - name: Set up Go
       uses: actions/setup-go@v3
