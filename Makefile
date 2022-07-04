@@ -6,18 +6,6 @@ BINARY=terraform-provider-${NAME}
 VERSION=0.3
 OS_ARCH=darwin_arm64
 
-# Akash variables
-export AKASH_KEY_NAME=terraform
-export AKASH_KEYRING_BACKEND=os
-export AKASH_ACCOUNT_ADDRESS=$$(./bin/akash keys show $(AKASH_KEY_NAME) -a)
-export AKASH_NET=https://raw.githubusercontent.com/ovrclk/net/master/mainnet
-export AKASH_VERSION=$$(curl -s "$(AKASH_NET)/version.txt")
-export AKASH_CHAIN_ID=$$(curl -s "$(AKASH_NET)/chain-id.txt")
-export AKASH_NODE=http://akash.c29r3.xyz:80/rpc
-export AKASH_HOME=$(realpath ~/.akash)
-
-export TF_LOG_PROVIDER=DEBUG
-
 default: install
 
 build:
@@ -34,8 +22,8 @@ release:
 	GOOS=openbsd GOARCH=386 go build -o ./bin/${BINARY}_${VERSION}_openbsd_386
 	GOOS=openbsd GOARCH=amd64 go build -o ./bin/${BINARY}_${VERSION}_openbsd_amd64
 	GOOS=solaris GOARCH=amd64 go build -o ./bin/${BINARY}_${VERSION}_solaris_amd64
-	GOOS=windows GOARCH=386 go build -o ./bin/${BINARY}_${VERSION}_windows_386
-	GOOS=windows GOARCH=amd64 go build -o ./bin/${BINARY}_${VERSION}_windows_amd64
+	#GOOS=windows GOARCH=386 go build -o ./bin/${BINARY}_${VERSION}_windows_386
+	#GOOS=windows GOARCH=amd64 go build -o ./bin/${BINARY}_${VERSION}_windows_amd64
 
 install: build
 	mkdir -p ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
@@ -55,4 +43,5 @@ develop:
 	make clean
 	go build -o terraform-provider-akash
 	make install
-	cd examples && terraform init && terraform apply --auto-approve
+
+print-%  : ; @echo $($*)

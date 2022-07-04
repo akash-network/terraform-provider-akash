@@ -1,0 +1,31 @@
+name: Publish
+
+on:
+  push:
+    branches: [ "dev", "main" ]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - artifact_name: terraform-provider-akash_${{ env.VERSION }}_linux_amd64
+          - artifact_name: terraform-provider-akash_${{ env.VERSION }}_darwin_amd64
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set version
+      run: echo ::set-env name=VERSION::$(make print-VERSION)
+    - name: Set up Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: 1.18
+    - name: Build releases
+      run: make release
+    - name: Publish releases
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: bin/${{ matrix.artifact_name }}
+        asset_name: ${{ matrix.artifact_name }}
+        tag: ${{ github.ref }}
