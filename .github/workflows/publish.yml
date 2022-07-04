@@ -10,8 +10,8 @@ jobs:
     strategy:
       matrix:
         include:
-          - artifact_name: terraform-provider-akash_${{ env.VERSION }}_linux_amd64
-          - artifact_name: terraform-provider-akash_${{ env.VERSION }}_darwin_amd64
+          - os_arch: linux_amd64
+          - os_arch: darwin_amd64
     steps:
     - uses: actions/checkout@v3
     - name: Set version
@@ -26,6 +26,6 @@ jobs:
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: bin/${{ matrix.artifact_name }}
-        asset_name: ${{ matrix.artifact_name }}
+        file: bin/terraform-provider-akash_${{ env.VERSION }}_${{ matrix.os_arch }}
+        asset_name: terraform-provider-akash_${{ env.VERSION }}_${{ matrix.os_arch }}
         tag: ${{ github.ref }}
