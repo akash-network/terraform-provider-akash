@@ -1,19 +1,23 @@
-package cli
+package cli_test
 
-import "testing"
+import (
+	"context"
+	"terraform-provider-akash/akash/client/cli"
+	"testing"
+)
 
 func TestAkashCliAppendsSubcommands(t *testing.T) {
-	cmd := AkashCli().Query().Market().Bid().List()
+	cmd := cli.AkashCli(context.TODO()).Query().Market().Bid().List()
 	expectedSize := 5
 
-	if len(cmd) != expectedSize {
-		t.Logf("Expected command to have %d subcommands, found %d (%+v)", expectedSize, len(cmd), cmd)
+	if len(cmd.Content) != expectedSize {
+		t.Logf("Expected command to have %d subcommands, found %d (%+v)", expectedSize, len(cmd.Content), cmd)
 		t.Fail()
 	}
 }
 
 func TestAkashCliHeadlessSizeIsCorrect(t *testing.T) {
-	cmd := AkashCli().Query().Market().Bid().List().Headless()
+	cmd := cli.AkashCli(context.TODO()).Query().Market().Bid().List().Headless()
 	expectedSize := 4
 
 	if len(cmd) != expectedSize {

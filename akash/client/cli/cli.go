@@ -1,11 +1,26 @@
 package cli
 
-import "fmt"
+import (
+	"context"
+	"fmt"
+	"os"
+)
 
-type AkashCommand []string
+type AkashCommand struct {
+	ctx     context.Context
+	Content []string
+}
 
-func AkashCli() AkashCommand {
-	return AkashCommand{"../bin/akash"}
+func AkashCli(ctx context.Context) AkashCommand {
+	bin, ok := os.LookupEnv("AKASH_PATH")
+	if !ok {
+		bin = "akash"
+	}
+
+	return AkashCommand{
+		ctx:     ctx,
+		Content: []string{bin},
+	}
 }
 
 func (c AkashCommand) Tx() AkashCommand {
@@ -118,9 +133,10 @@ func (c AkashCommand) OutputJson() AkashCommand {
 }
 
 func (c AkashCommand) Headless() []string {
-	return c[1:]
+	return c.Content[1:]
 }
 
 func (c AkashCommand) append(str string) AkashCommand {
-	return append(c, str)
+	c.Content = append(c.Content, str)
+	return c
 }

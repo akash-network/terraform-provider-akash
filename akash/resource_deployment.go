@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+const IdSeparator = ":"
 const DeploymentIdDseq = 0
 const DeploymentIdOwner = 1
 const DeploymentIdProvider = 2
@@ -59,10 +60,6 @@ func resourceDeployment() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"escrow_account_state": &schema.Schema{
-				Type:     schema.TypeString,
-				Computed: true,
-			},
 			"provider_address": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
@@ -84,57 +81,59 @@ func resourceDeployment() *schema.Resource {
 				},
 			},
 		},
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 	}
 }
 
 func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	// TODO: check context for cancellation.
+	akash := m.(*client.AkashClient)
 
-	// TODO: Manifest location not as type string.
 	manifestLocation, err := CreateTemporaryDeploymentFile(ctx, d.Get("sdl").(string))
 
-	dseq, err := client.CreateDeployment(ctx, manifestLocation)
+	dseq, err := akash.CreateDeployment(manifestLocation)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	bids, diagnostics := queryBids(ctx, dseq)
+	bids, diagnostics := queryBids(ctx, akash, dseq)
 	if diagnostics != nil {
 		return diagnostics
 	}
 
-	provider := selectProvider(ctx, bids)
+	provider := selectProvider(ctx, akash, bids)
 
-	if diagnostics := createLease(ctx, dseq, provider); diagnostics != nil {
-		err := client.DeleteDeployment(ctx, dseq, os.Getenv("AKASH_ACCOUNT_ADDRESS"))
+	if diagnostics := createLease(ctx, akash, dseq, provider); diagnostics != nil {
+		err := akash.DeleteDeployment(ctx, dseq, os.Getenv("AKASH_ACCOUNT_ADDRESS"))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 		return diagnostics
 	}
-	if diagnostics := sendManifest(ctx, dseq, provider, manifestLocation); diagnostics != nil {
-		err := client.DeleteDeployment(ctx, dseq, os.Getenv("AKASH_ACCOUNT_ADDRESS"))
+	if diagnostics := sendManifest(ctx, akash, dseq, provider, manifestLocation); diagnostics != nil {
+		err := akash.DeleteDeployment(ctx, dseq, os.Getenv("AKASH_ACCOUNT_ADDRESS"))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 		return diagnostics
 	}
 	if diagnostics := setCreatedState(d, dseq, provider); diagnostics != nil {
-		err := client.DeleteDeployment(ctx, dseq, os.Getenv("AKASH_ACCOUNT_ADDRESS"))
+		err := akash.DeleteDeployment(ctx, dseq, os.Getenv("AKASH_ACCOUNT_ADDRESS"))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 		return diagnostics
 	}
 
-	d.SetId(fmt.Sprintf("%s-%s-%s", dseq, os.Getenv("AKASH_ACCOUNT_ADDRESS"), provider))
+	d.SetId(dseq + IdSeparator + os.Getenv("AKASH_ACCOUNT_ADDRESS") + IdSeparator + provider)
 
 	return resourceDeploymentRead(ctx, d, m)
 }
 
-func queryBids(ctx context.Context, dseq string) (types.Bids, diag.Diagnostics) {
+func queryBids(ctx context.Context, akash *client.AkashClient, dseq string) (types.Bids, diag.Diagnostics) {
 	tflog.Debug(ctx, "Querying available bids")
-	bids, err := client.GetBids(ctx, dseq, time.Minute)
+	bids, err := akash.GetBids(dseq, time.Minute)
 	if err != nil {
 		return nil, diag.FromErr(err)
 	}
@@ -145,10 +144,10 @@ func queryBids(ctx context.Context, dseq string) (types.Bids, diag.Diagnostics) 
 	return bids, nil
 }
 
-func sendManifest(ctx context.Context, dseq string, provider string, manifestLocation string) diag.Diagnostics {
+func sendManifest(ctx context.Context, akash *client.AkashClient, dseq string, provider string, manifestLocation string) diag.Diagnostics {
 	tflog.Info(ctx, "Sending the manifest")
 	// Send the manifest
-	res, err := client.SendManifest(ctx, dseq, provider, manifestLocation)
+	res, err := akash.SendManifest(dseq, provider, manifestLocation)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -172,9 +171,9 @@ func setCreatedState(d *schema.ResourceData, dseq string, provider string) diag.
 	return nil
 }
 
-func selectProvider(ctx context.Context, bids types.Bids) string {
+func selectProvider(ctx context.Context, akash *client.AkashClient, bids types.Bids) string {
 	// Select the provider
-	provider, err := client.FindCheapest(ctx, bids)
+	provider, err := akash.FindCheapest(bids)
 	if err != nil {
 		diag.FromErr(err)
 		return ""
@@ -184,10 +183,10 @@ func selectProvider(ctx context.Context, bids types.Bids) string {
 	return provider
 }
 
-func createLease(ctx context.Context, dseq string, provider string) diag.Diagnostics {
+func createLease(ctx context.Context, akash *client.AkashClient, dseq string, provider string) diag.Diagnostics {
 	tflog.Info(ctx, "Creating lease")
 	// Create a lease
-	lease, err := client.CreateLease(ctx, dseq, provider)
+	lease, err := akash.CreateLease(dseq, provider)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -196,12 +195,14 @@ func createLease(ctx context.Context, dseq string, provider string) diag.Diagnos
 }
 
 func resourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	akash := m.(*client.AkashClient)
+
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
-	deploymentId := strings.Split(d.Id(), "-")
+	deploymentId := strings.Split(d.Id(), IdSeparator)
 
-	deployment, err := client.GetDeployment(deploymentId[DeploymentIdDseq], deploymentId[DeploymentIdOwner])
+	deployment, err := akash.GetDeployment(deploymentId[DeploymentIdDseq], deploymentId[DeploymentIdOwner])
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -224,11 +225,8 @@ func resourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m inter
 	if err := d.Set("escrow_account_balance_amount", deployment["escrow_account_balance_amount"]); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("escrow_account_state", deployment["escrow_account_state"]); err != nil {
-		return diag.FromErr(err)
-	}
 
-	leaseStatus, err := client.GetLeaseStatus(ctx, deploymentId[DeploymentIdDseq], deploymentId[DeploymentIdProvider])
+	leaseStatus, err := akash.GetLeaseStatus(deploymentId[DeploymentIdDseq], deploymentId[DeploymentIdProvider])
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -251,7 +249,9 @@ func resourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m inter
 }
 
 func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	deploymentId := strings.Split(d.Id(), "-")
+	akash := m.(*client.AkashClient)
+
+	deploymentId := strings.Split(d.Id(), IdSeparator)
 
 	dseq := deploymentId[DeploymentIdDseq]
 	provider := deploymentId[DeploymentIdProvider]
@@ -260,11 +260,11 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, m int
 		manifestLocation, err := CreateTemporaryDeploymentFile(ctx, d.Get("sdl").(string))
 
 		// Update the deployment
-		if err := client.UpdateDeployment(ctx, dseq, manifestLocation); err != nil {
+		if err := akash.UpdateDeployment(dseq, manifestLocation); err != nil {
 			return diag.FromErr(err)
 		}
 
-		if diagnostics := sendManifest(ctx, dseq, provider, manifestLocation); diagnostics != nil {
+		if diagnostics := sendManifest(ctx, akash, dseq, provider, manifestLocation); diagnostics != nil {
 			return diagnostics
 		}
 
@@ -278,12 +278,14 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, m int
 }
 
 func resourceDeploymentDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	akash := m.(*client.AkashClient)
+
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
-	deploymentId := strings.Split(d.Id(), "-")
+	deploymentId := strings.Split(d.Id(), IdSeparator)
 
-	err := client.DeleteDeployment(ctx, deploymentId[DeploymentIdDseq], deploymentId[DeploymentIdOwner])
+	err := akash.DeleteDeployment(ctx, deploymentId[DeploymentIdDseq], deploymentId[DeploymentIdOwner])
 	if err != nil {
 		return diag.FromErr(err)
 	}

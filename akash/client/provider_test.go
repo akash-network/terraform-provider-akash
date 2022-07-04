@@ -1,14 +1,15 @@
-package client
+package client_test
 
 import (
 	"context"
+	"terraform-provider-akash/akash/client"
 	"terraform-provider-akash/akash/client/types"
 	"testing"
 )
 
 func TestFindCheapestReturnsErrorOnEmptyBidsList(t *testing.T) {
-	ctx := context.TODO()
-	provider, err := FindCheapest(ctx, types.Bids{})
+	akash := client.New(context.TODO())
+	provider, err := akash.FindCheapest(types.Bids{})
 	expectedError := "empty bid slice"
 
 	if provider != "" {

@@ -4,19 +4,22 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"os/exec"
 	"strings"
 )
 
 func (c AkashCommand) AsCmd() *exec.Cmd {
 	return exec.Command(
-		AkashCli()[0],
+		c.Content[0],
 		c.Headless()...,
 	)
 }
 
 func (c AkashCommand) Raw() ([]byte, error) {
 	cmd := c.AsCmd()
+
+	tflog.Debug(c.ctx, strings.Join(cmd.Args, " "))
 
 	var errb bytes.Buffer
 	cmd.Stderr = &errb
@@ -30,6 +33,8 @@ func (c AkashCommand) Raw() ([]byte, error) {
 
 func (c AkashCommand) DecodeJson(v any) error {
 	cmd := c.AsCmd()
+
+	tflog.Debug(c.ctx, strings.Join(cmd.Args, " "))
 
 	var errb bytes.Buffer
 	cmd.Stderr = &errb

@@ -10,22 +10,22 @@ import (
 	"time"
 )
 
-func GetBids(ctx context.Context, dseq string, timeout time.Duration) (types.Bids, error) {
+func (ak *AkashClient) GetBids(dseq string, timeout time.Duration) (types.Bids, error) {
 	bids := types.Bids{}
 	for timeout > 0 && len(bids) <= 0 {
 		startTime := time.Now()
 		// Check bids on deployments and choose one
-		currentBids, err := queryBidList(ctx, dseq)
+		currentBids, err := queryBidList(ak.ctx, dseq)
 		if err != nil {
-			tflog.Error(ctx, "Failed to query bid list")
-			tflog.Debug(ctx, fmt.Sprintf("Error: %s", err))
+			tflog.Error(ak.ctx, "Failed to query bid list")
+			tflog.Debug(ak.ctx, fmt.Sprintf("Error: %s", err))
 
 			if strings.Contains(err.Error(), "error unmarshalling") {
 				continue
 			}
 			return nil, err
 		}
-		tflog.Debug(ctx, fmt.Sprintf("Received %d bids", len(bids)))
+		tflog.Debug(ak.ctx, fmt.Sprintf("Received %d bids", len(bids)))
 		bids = currentBids
 		time.Sleep(time.Second)
 		timeout -= time.Since(startTime)
@@ -35,9 +35,7 @@ func GetBids(ctx context.Context, dseq string, timeout time.Duration) (types.Bid
 }
 
 func queryBidList(ctx context.Context, dseq string) (types.Bids, error) {
-	cmd := cli.AkashCli().Query().Market().Bid().List().SetDseq(dseq).OutputJson()
-
-	tflog.Debug(ctx, strings.Join(cmd.AsCmd().Args, " "))
+	cmd := cli.AkashCli(ctx).Query().Market().Bid().List().SetDseq(dseq).OutputJson()
 
 	bidsSliceWrapper := types.BidsSliceWrapper{}
 	if err := cmd.DecodeJson(&bidsSliceWrapper); err != nil {

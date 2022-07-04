@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	client "terraform-provider-akash/akash/client"
 )
 
 // Provider -
@@ -23,5 +24,7 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
-	return nil, diags
+	akash := client.New(ctx)
+
+	return akash, diags
 }

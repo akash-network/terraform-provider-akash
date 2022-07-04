@@ -1,5 +1,8 @@
 # Terraform Provider Akash
 
+## Pre-requisites
+For the provider to work properly you'll need
+
 ## Usage
 
 ### Environment Variables
@@ -15,6 +18,20 @@ Make sure you have the following environment variables in your machine in order 
 | `AKASH_CHAIN_ID`        | Chain id of the network.                                         |
 | `AKASH_NODE`            | Akash node to connect to.                                        |
 | `AKASH_HOME`            | Absolute path to the Akash's home folder, usually under ~/.akash |
+| `AKASH_PATH`            | (Optional) The path to the Akash binary                          |
+
+### Import current state
+To import your existing deployments to your `tfstate` you have to build the id of your deployment which consists of the dseq, your address and the provider's address separated by ":".
+```shell
+terraform import akash_deployment.<resource_name> <dseq>:<your address>:<providers address>
+```
+
+### How to install
+To install the Terraform provider through the source code execute the two following commands from your shell:
+```shell
+go build -o terraform-provider-akash
+make install
+```
 
 ## Development environment setup
 
@@ -27,6 +44,7 @@ export AKASH_VERSION="$(curl -s "$AKASH_NET/version.txt")"
 export AKASH_CHAIN_ID="$(curl -s "$AKASH_NET/chain-id.txt")"
 export AKASH_NODE="http://akash.c29r3.xyz:80/rpc"
 export AKASH_HOME="$(realpath ~/.akash)"
+export AKASH_PATH="$(realpath ./bin/akash)"
 
 export TF_LOG_PROVIDER=DEBUG
 ```

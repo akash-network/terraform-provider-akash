@@ -8,15 +8,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"net/http"
 	"os"
-	"strings"
 	"terraform-provider-akash/akash/client/cli"
 	"terraform-provider-akash/akash/client/types"
 	"time"
 )
 
-const AkashBinary = "../bin/akash"
-
-func GetDeployments() ([]map[string]interface{}, error) {
+func (ak *AkashClient) GetDeployments() ([]map[string]interface{}, error) {
 	client := &http.Client{Timeout: 10 * time.Second}
 	address := os.Getenv("AKASH_ACCOUNT_ADDRESS")
 
@@ -53,7 +50,7 @@ func GetDeployments() ([]map[string]interface{}, error) {
 	return deployments, nil
 }
 
-func GetDeployment(dseq string, owner string) (map[string]interface{}, error) {
+func (ak *AkashClient) GetDeployment(dseq string, owner string) (map[string]interface{}, error) {
 	client := &http.Client{Timeout: 10 * time.Second}
 
 	req, err := http.NewRequest("GET", fmt.Sprintf("%s/akash/deployment/v1beta2/deployments/info?id.owner=%s&id.dseq=%s", "http://135.181.181.122:1518", owner, dseq), nil)
@@ -86,27 +83,25 @@ func GetDeployment(dseq string, owner string) (map[string]interface{}, error) {
 	return d, nil
 }
 
-func CreateDeployment(ctx context.Context, manifestLocation string) (string, error) {
+func (ak *AkashClient) CreateDeployment(manifestLocation string) (string, error) {
 
-	tflog.Debug(ctx, "Creating deployment")
+	tflog.Debug(ak.ctx, "Creating deployment")
 	// Create deployment using the file created with the SDL
-	dseq, err := transactionCreateDeployment(ctx, manifestLocation)
+	dseq, err := transactionCreateDeployment(ak.ctx, manifestLocation)
 	if err != nil {
-		tflog.Error(ctx, "Failed creating deployment")
-		tflog.Debug(ctx, fmt.Sprintf("%s", err))
+		tflog.Error(ak.ctx, "Failed creating deployment")
+		tflog.Debug(ak.ctx, fmt.Sprintf("%s", err))
 		return "", err
 	}
-	tflog.Info(ctx, "Deployment created with DSEQ "+dseq)
+	tflog.Info(ak.ctx, "Deployment created with DSEQ "+dseq)
 
 	return dseq, nil
 }
 
 // Perform the transaction to create the deployment and return either the DSEQ or an error.
 func transactionCreateDeployment(ctx context.Context, manifestLocation string) (string, error) {
-	cmd := cli.AkashCli().Tx().Deployment().Create().Manifest(manifestLocation).
+	cmd := cli.AkashCli(ctx).Tx().Deployment().Create().Manifest(manifestLocation).
 		SetFees(5000).AutoAccept().SetFrom(os.Getenv("AKASH_KEY_NAME")).OutputJson()
-
-	tflog.Debug(ctx, strings.Join(cmd.AsCmd().Args, " "))
 
 	transaction := types.Transaction{}
 	if err := cmd.DecodeJson(&transaction); err != nil {
@@ -120,13 +115,10 @@ func transactionCreateDeployment(ctx context.Context, manifestLocation string) (
 	return transaction.Logs[0].Events[0].Attributes.Get("dseq")
 }
 
-func DeleteDeployment(ctx context.Context, dseq string, owner string) error {
-
-	cmd := cli.AkashCli().Tx().Deployment().Close().
+func (ak *AkashClient) DeleteDeployment(ctx context.Context, dseq string, owner string) error {
+	cmd := cli.AkashCli(ctx).Tx().Deployment().Close().
 		SetDseq(dseq).SetOwner(owner).SetFrom(os.Getenv("AKASH_KEY_NAME")).
 		DefaultGas().AutoAccept().OutputJson()
-
-	tflog.Debug(ctx, strings.Join(cmd.AsCmd().Args, " "))
 
 	out, err := cmd.Raw()
 	if err != nil {
@@ -138,18 +130,16 @@ func DeleteDeployment(ctx context.Context, dseq string, owner string) error {
 	return nil
 }
 
-func UpdateDeployment(ctx context.Context, dseq string, manifestLocation string) error {
-	cmd := cli.AkashCli().Tx().Deployment().Update().Manifest(manifestLocation).
+func (ak *AkashClient) UpdateDeployment(dseq string, manifestLocation string) error {
+	cmd := cli.AkashCli(ak.ctx).Tx().Deployment().Update().Manifest(manifestLocation).
 		SetDseq(dseq).SetFrom(os.Getenv("AKASH_KEY_NAME")).DefaultGas().AutoAccept().OutputJson()
-
-	tflog.Debug(ctx, strings.Join(cmd.AsCmd().Args, " "))
 
 	out, err := cmd.Raw()
 	if err != nil {
 		return err
 	}
 
-	tflog.Debug(ctx, fmt.Sprintf("Response: %s", out))
+	tflog.Debug(ak.ctx, fmt.Sprintf("Response: %s", out))
 
 	return nil
 }
