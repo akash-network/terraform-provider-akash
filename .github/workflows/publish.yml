@@ -15,7 +15,9 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Set version
-      run: echo ::set-output name=VERSION::$(make print-VERSION)
+      run: |
+        echo ::set-output name=VERSION::$(make print-VERSION)
+        echo ${{ steps.version.outputs.VERSION }}
     - name: Set up Go
       uses: actions/setup-go@v3
       with:
@@ -26,6 +28,6 @@ jobs:
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: bin/terraform-provider-akash_${{ env.VERSION }}_${{ matrix.os_arch }}
-        asset_name: terraform-provider-akash_${{ env.VERSION }}_${{ matrix.os_arch }}
+        file: bin/terraform-provider-akash_${{ steps.version.outputs.VERSION }}_${{ matrix.os_arch }}
+        asset_name: terraform-provider-akash_${{ steps.version.outputs.VERSION }}_${{ matrix.os_arch }}
         tag: ${{ github.ref }}
