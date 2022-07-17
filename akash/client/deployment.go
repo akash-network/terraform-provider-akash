@@ -17,7 +17,7 @@ func (ak *AkashClient) GetDeployments() ([]map[string]interface{}, error) {
 	client := &http.Client{Timeout: 10 * time.Second}
 	address := os.Getenv("AKASH_ACCOUNT_ADDRESS")
 
-	req, err := http.NewRequest("GET", fmt.Sprintf("%s/akash/deployment/v1beta2/deployments/list?filters.owner=%s", "http://135.181.181.122:1518", address), nil)
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/akash/deployment/v1beta2/deployments/list?filters.owner=%s", "https://akash.c29r3.xyz/api", address), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -53,7 +53,7 @@ func (ak *AkashClient) GetDeployments() ([]map[string]interface{}, error) {
 func (ak *AkashClient) GetDeployment(dseq string, owner string) (map[string]interface{}, error) {
 	client := &http.Client{Timeout: 10 * time.Second}
 
-	req, err := http.NewRequest("GET", fmt.Sprintf("%s/akash/deployment/v1beta2/deployments/info?id.owner=%s&id.dseq=%s", "http://135.181.181.122:1518", owner, dseq), nil)
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/akash/deployment/v1beta2/deployments/info?id.owner=%s&id.dseq=%s", "https://akash.c29r3.xyz/api", owner, dseq), nil)
 	if err != nil {
 		return nil, err
 	}

@@ -1,3 +1,7 @@
+/**
+ * Use this file as the starting point for testing this provider.
+ **/
+
 terraform {
   required_providers {
     akash = {
@@ -9,18 +13,10 @@ terraform {
 
 provider "akash" {}
 
-module "akash_deployments" {
-  source = "./deployment"
-}
-
 resource "akash_deployment" "my_deployment" {
   sdl = file("./wordpress.yaml")
 }
 
-output "my_deployment" {
-  value = akash_deployment.my_deployment
+output "deployment_id" {
+  value = akash_deployment.my_deployment.id
 }
-
-#output "akash_deployments" {
-#  value = module.akash_deployments.all_active_deployments
-#}
