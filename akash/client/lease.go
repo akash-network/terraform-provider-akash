@@ -2,7 +2,6 @@ package client
 
 import (
 	"os"
-	"strings"
 	"terraform-provider-akash/akash/client/cli"
 )
 
@@ -13,10 +12,6 @@ func (ak *AkashClient) CreateLease(dseq string, provider string) (string, error)
 
 	out, err := cmd.Raw()
 	if err != nil {
-		if strings.Contains(err.Error(), "error unmarshalling") {
-			return ak.CreateLease(dseq, provider)
-		}
-
 		return "", err
 	}
 

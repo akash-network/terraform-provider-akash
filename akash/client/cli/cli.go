@@ -3,6 +3,7 @@ package cli
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"os"
 )
 
@@ -122,6 +123,20 @@ func (c AkashCommand) SetGasAdjustment() AkashCommand {
 
 func (c AkashCommand) SetGasPrices() AkashCommand {
 	return c.append("--gas-prices=0.025uakt")
+}
+
+func (c AkashCommand) SetSignMode(mode string) AkashCommand {
+	supportedModes := map[string]bool{
+		"default":    true,
+		"amino-json": true,
+	}
+
+	if _, ok := supportedModes[mode]; !ok {
+		tflog.Error(c.ctx, fmt.Sprintf("Mode '%s' not supported", mode))
+		return c
+	}
+
+	return c.append("--sign-mode").append(mode)
 }
 
 func (c AkashCommand) AutoAccept() AkashCommand {

@@ -25,6 +25,11 @@ func (c AkashCommand) Raw() ([]byte, error) {
 	cmd.Stderr = &errb
 	out, err := cmd.Output()
 	if err != nil {
+
+		if strings.Contains(err.Error(), "error unmarshalling") {
+			return c.Raw()
+		}
+
 		return nil, errors.New(errb.String())
 	}
 
@@ -40,6 +45,10 @@ func (c AkashCommand) DecodeJson(v any) error {
 	cmd.Stderr = &errb
 	out, err := cmd.Output()
 	if err != nil {
+		if strings.Contains(err.Error(), "error unmarshalling") {
+			return c.DecodeJson(v)
+		}
+
 		return errors.New(errb.String())
 	}
 

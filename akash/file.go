@@ -2,17 +2,21 @@ package akash
 
 import (
 	"context"
+	"fmt"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"io/ioutil"
+	"time"
 )
 
 func CreateTemporaryDeploymentFile(ctx context.Context, sdl string) (string, error) {
-	tflog.Debug(ctx, "Creating temporary deployment file /var/tmp/deployment.yaml")
+	timestamp := time.Now().UnixNano()
+	filename := fmt.Sprintf("/var/tmp/deployment-%d.yaml", timestamp)
+	tflog.Debug(ctx, fmt.Sprintf("Creating temporary deployment file %s", filename))
 
-	err := ioutil.WriteFile("/var/tmp/deployment.yaml", []byte(sdl), 0666)
+	err := ioutil.WriteFile(filename, []byte(sdl), 0666)
 	if err != nil {
 		return "", err
 	}
 
-	return "/var/tmp/deployment.yaml", nil
+	return filename, nil
 }

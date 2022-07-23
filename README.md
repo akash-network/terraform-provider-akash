@@ -1,7 +1,19 @@
 # Terraform Provider Akash
 
 ## Pre-requisites
-For the provider to work properly you'll need
+For the provider to work properly you'll need:
+
+- Terraform
+- Go 1.18
+- Akash v0.16.3
+
+## Installation
+
+Move the binary file of the provider (check releases) to the following folder:
+```shell
+mkdir -p ~/.terraform.d/plugins/joaoluna.com/cloud/akash/<version>/<OS arch e.g. darwin_arm64>
+mv <binary> ~/.terraform.d/plugins/joaoluna.com/cloud/akash/<version>/<OS arch e.g. darwin_arm64>
+```
 
 ## Usage
 
@@ -32,6 +44,9 @@ To install the Terraform provider through the source code execute the two follow
 go build -o terraform-provider-akash
 make install
 ```
+
+### Example configurations
+You can find example configurations for creating a deployment inside the `examples/` folder.
 
 ## Development environment setup
 
