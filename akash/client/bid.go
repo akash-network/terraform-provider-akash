@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"strings"
 	"terraform-provider-akash/akash/client/cli"
 	"terraform-provider-akash/akash/client/types"
 	"time"
@@ -20,9 +19,6 @@ func (ak *AkashClient) GetBids(dseq string, timeout time.Duration) (types.Bids, 
 			tflog.Error(ak.ctx, "Failed to query bid list")
 			tflog.Debug(ak.ctx, fmt.Sprintf("Error: %s", err))
 
-			if strings.Contains(err.Error(), "error unmarshalling") {
-				continue
-			}
 			return nil, err
 		}
 		tflog.Debug(ak.ctx, fmt.Sprintf("Received %d bids", len(bids)))

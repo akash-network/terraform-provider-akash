@@ -88,7 +88,7 @@ cd examples && terraform init && terraform apply --auto-approve
 ### Close the Deployment
 
 ```shell
-./bin/akash tx deployment close --dseq 6740919 --owner $AKASH_ACCOUNT_ADDRESS --from $AKASH_KEY_NAME -y --fees 800uakt --gas auto
+./bin/akash tx deployment close --dseq <dseq> --owner $AKASH_ACCOUNT_ADDRESS --from $AKASH_KEY_NAME -y --fees 800uakt --gas auto
 ```
 
 ### Get deployment details

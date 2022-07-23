@@ -3,7 +3,7 @@ HOSTNAME=joaoluna.com
 NAMESPACE=cloud
 NAME=akash
 BINARY=terraform-provider-${NAME}
-VERSION=0.3
+VERSION=0.4
 OS_ARCH=darwin_arm64
 
 default: install
@@ -46,3 +46,6 @@ develop:
 	make install
 
 print-%  : ; @echo $($*)
+
+verify:
+	@env | grep ^AKASH_

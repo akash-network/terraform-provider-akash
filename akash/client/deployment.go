@@ -101,7 +101,7 @@ func (ak *AkashClient) CreateDeployment(manifestLocation string) (string, error)
 // Perform the transaction to create the deployment and return either the DSEQ or an error.
 func transactionCreateDeployment(ctx context.Context, manifestLocation string) (string, error) {
 	cmd := cli.AkashCli(ctx).Tx().Deployment().Create().Manifest(manifestLocation).
-		SetFees(5000).AutoAccept().SetFrom(os.Getenv("AKASH_KEY_NAME")).OutputJson()
+		DefaultGas().AutoAccept().SetFrom(os.Getenv("AKASH_KEY_NAME")).OutputJson()
 
 	transaction := types.Transaction{}
 	if err := cmd.DecodeJson(&transaction); err != nil {
