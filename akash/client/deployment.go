@@ -1,13 +1,11 @@
 package client
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"net/http"
-	"os"
 	"terraform-provider-akash/akash/client/cli"
 	"terraform-provider-akash/akash/client/types"
 	"time"
@@ -15,7 +13,7 @@ import (
 
 func (ak *AkashClient) GetDeployments() ([]map[string]interface{}, error) {
 	client := &http.Client{Timeout: 10 * time.Second}
-	address := os.Getenv("AKASH_ACCOUNT_ADDRESS")
+	address := ak.Config.AccountAddress
 
 	req, err := http.NewRequest("GET", fmt.Sprintf("%s/akash/deployment/v1beta2/deployments/list?filters.owner=%s", "https://akash.c29r3.xyz/api", address), nil)
 	if err != nil {
@@ -87,7 +85,7 @@ func (ak *AkashClient) CreateDeployment(manifestLocation string) (string, error)
 
 	tflog.Debug(ak.ctx, "Creating deployment")
 	// Create deployment using the file created with the SDL
-	dseq, err := transactionCreateDeployment(ak.ctx, manifestLocation)
+	dseq, err := transactionCreateDeployment(ak, manifestLocation)
 	if err != nil {
 		tflog.Error(ak.ctx, "Failed creating deployment")
 		tflog.Debug(ak.ctx, fmt.Sprintf("%s", err))
@@ -99,9 +97,10 @@ func (ak *AkashClient) CreateDeployment(manifestLocation string) (string, error)
 }
 
 // Perform the transaction to create the deployment and return either the DSEQ or an error.
-func transactionCreateDeployment(ctx context.Context, manifestLocation string) (string, error) {
-	cmd := cli.AkashCli(ctx).Tx().Deployment().Create().Manifest(manifestLocation).
-		DefaultGas().AutoAccept().SetFrom(os.Getenv("AKASH_KEY_NAME")).OutputJson()
+func transactionCreateDeployment(ak *AkashClient, manifestLocation string) (string, error) {
+	cmd := cli.AkashCli(ak).Tx().Deployment().Create().Manifest(manifestLocation).
+		DefaultGas().AutoAccept().SetFrom(ak.Config.KeyName).SetKeyringBackend(ak.Config.KeyringBackend).
+		SetChainId(ak.Config.ChainId).SetNode(ak.Config.Node).OutputJson()
 
 	transaction := types.Transaction{}
 	if err := cmd.DecodeJson(&transaction); err != nil {
@@ -115,24 +114,27 @@ func transactionCreateDeployment(ctx context.Context, manifestLocation string) (
 	return transaction.Logs[0].Events[0].Attributes.Get("dseq")
 }
 
-func (ak *AkashClient) DeleteDeployment(ctx context.Context, dseq string, owner string) error {
-	cmd := cli.AkashCli(ctx).Tx().Deployment().Close().
-		SetDseq(dseq).SetOwner(owner).SetFrom(os.Getenv("AKASH_KEY_NAME")).
-		DefaultGas().AutoAccept().OutputJson()
+func (ak *AkashClient) DeleteDeployment(dseq string, owner string) error {
+	cmd := cli.AkashCli(ak).Tx().Deployment().Close().
+		SetDseq(dseq).SetOwner(owner).SetFrom(ak.Config.KeyName).
+		DefaultGas().SetChainId(ak.Config.ChainId).SetKeyringBackend(ak.Config.KeyringBackend).
+		SetNode(ak.Config.Node).AutoAccept().OutputJson()
 
 	out, err := cmd.Raw()
 	if err != nil {
 		return err
 	}
 
-	tflog.Debug(ctx, fmt.Sprintf("Response: %s", out))
+	tflog.Debug(ak.ctx, fmt.Sprintf("Response: %s", out))
 
 	return nil
 }
 
 func (ak *AkashClient) UpdateDeployment(dseq string, manifestLocation string) error {
-	cmd := cli.AkashCli(ak.ctx).Tx().Deployment().Update().Manifest(manifestLocation).
-		SetDseq(dseq).SetFrom(os.Getenv("AKASH_KEY_NAME")).DefaultGas().AutoAccept().OutputJson()
+	cmd := cli.AkashCli(ak).Tx().Deployment().Update().Manifest(manifestLocation).
+		SetDseq(dseq).SetFrom(ak.Config.KeyName).SetNode(ak.Config.Node).
+		SetKeyringBackend(ak.Config.KeyringBackend).SetChainId(ak.Config.ChainId).
+		DefaultGas().AutoAccept().OutputJson()
 
 	out, err := cmd.Raw()
 	if err != nil {

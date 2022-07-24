@@ -4,10 +4,10 @@ The Akash provider is used to interact with the Akash Network.
 
 ## Example Usage
 
+To use the provider with your current environment settings simply use it with an empty configuration:
 ```terraform
 provider "akash" {}
 ```
-
 Remember to set all the required variables for the provider to work properly:
 
 | Variable                | Description                                                      |

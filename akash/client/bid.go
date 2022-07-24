@@ -1,7 +1,6 @@
 package client
 
 import (
-	"context"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"terraform-provider-akash/akash/client/cli"
@@ -14,10 +13,10 @@ func (ak *AkashClient) GetBids(dseq string, timeout time.Duration) (types.Bids, 
 	for timeout > 0 && len(bids) <= 0 {
 		startTime := time.Now()
 		// Check bids on deployments and choose one
-		currentBids, err := queryBidList(ak.ctx, dseq)
+		currentBids, err := queryBidList(ak, dseq)
 		if err != nil {
 			tflog.Error(ak.ctx, "Failed to query bid list")
-			tflog.Debug(ak.ctx, fmt.Sprintf("Error: %s", err))
+			tflog.Debug(ak.ctx, err.Error())
 
 			return nil, err
 		}
@@ -30,8 +29,8 @@ func (ak *AkashClient) GetBids(dseq string, timeout time.Duration) (types.Bids, 
 	return bids, nil
 }
 
-func queryBidList(ctx context.Context, dseq string) (types.Bids, error) {
-	cmd := cli.AkashCli(ctx).Query().Market().Bid().List().SetDseq(dseq).OutputJson()
+func queryBidList(ak *AkashClient, dseq string) (types.Bids, error) {
+	cmd := cli.AkashCli(ak).Query().Market().Bid().List().SetDseq(dseq).SetChainId(ak.Config.ChainId).OutputJson()
 
 	bidsSliceWrapper := types.BidsSliceWrapper{}
 	if err := cmd.DecodeJson(&bidsSliceWrapper); err != nil {

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"os"
 )
 
 type AkashCommand struct {
@@ -12,15 +11,20 @@ type AkashCommand struct {
 	Content []string
 }
 
-func AkashCli(ctx context.Context) AkashCommand {
-	bin, ok := os.LookupEnv("AKASH_PATH")
-	if !ok {
-		bin = "akash"
+type AkashCliClient interface {
+	GetContext() context.Context
+	GetPath() string
+}
+
+func AkashCli(client AkashCliClient) AkashCommand {
+	path := client.GetPath()
+	if path == "" {
+		path = "akash"
 	}
 
 	return AkashCommand{
-		ctx:     ctx,
-		Content: []string{bin},
+		ctx:     client.GetContext(),
+		Content: []string{path},
 	}
 }
 
@@ -123,6 +127,18 @@ func (c AkashCommand) SetGasAdjustment() AkashCommand {
 
 func (c AkashCommand) SetGasPrices() AkashCommand {
 	return c.append("--gas-prices=0.025uakt")
+}
+
+func (c AkashCommand) SetChainId(chainId string) AkashCommand {
+	return c.append("--chain-id").append(chainId)
+}
+
+func (c AkashCommand) SetNode(node string) AkashCommand {
+	return c.append("--node").append(node)
+}
+
+func (c AkashCommand) SetKeyringBackend(keyringBackend string) AkashCommand {
+	return c.append("--keyring-backend").append(keyringBackend)
 }
 
 func (c AkashCommand) SetSignMode(mode string) AkashCommand {

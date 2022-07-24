@@ -92,6 +92,10 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 
 	manifestLocation, err := CreateTemporaryDeploymentFile(ctx, d.Get("sdl").(string))
 
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	dseq, err := akash.CreateDeployment(manifestLocation)
 	if err != nil {
 		return diag.FromErr(err)
@@ -105,21 +109,21 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 	provider := selectProvider(ctx, akash, bids)
 
 	if diagnostics := createLease(ctx, akash, dseq, provider); diagnostics != nil {
-		err := akash.DeleteDeployment(ctx, dseq, os.Getenv("AKASH_ACCOUNT_ADDRESS"))
+		err := akash.DeleteDeployment(dseq, os.Getenv("AKASH_ACCOUNT_ADDRESS"))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 		return diagnostics
 	}
 	if diagnostics := sendManifest(ctx, akash, dseq, provider, manifestLocation); diagnostics != nil {
-		err := akash.DeleteDeployment(ctx, dseq, os.Getenv("AKASH_ACCOUNT_ADDRESS"))
+		err := akash.DeleteDeployment(dseq, os.Getenv("AKASH_ACCOUNT_ADDRESS"))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 		return diagnostics
 	}
 	if diagnostics := setCreatedState(d, dseq, provider); diagnostics != nil {
-		err := akash.DeleteDeployment(ctx, dseq, os.Getenv("AKASH_ACCOUNT_ADDRESS"))
+		err := akash.DeleteDeployment(dseq, os.Getenv("AKASH_ACCOUNT_ADDRESS"))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -285,7 +289,7 @@ func resourceDeploymentDelete(ctx context.Context, d *schema.ResourceData, m int
 
 	deploymentId := strings.Split(d.Id(), IdSeparator)
 
-	err := akash.DeleteDeployment(ctx, deploymentId[DeploymentIdDseq], deploymentId[DeploymentIdOwner])
+	err := akash.DeleteDeployment(deploymentId[DeploymentIdDseq], deploymentId[DeploymentIdOwner])
 	if err != nil {
 		return diag.FromErr(err)
 	}

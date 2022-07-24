@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"os"
 	"strings"
 	"terraform-provider-akash/akash/client/cli"
 	"terraform-provider-akash/akash/client/types"
@@ -12,9 +11,9 @@ import (
 
 func (ak *AkashClient) SendManifest(dseq string, provider string, manifestLocation string) (string, error) {
 
-	cmd := cli.AkashCli(ak.ctx).Provider().SendManifest(manifestLocation).
-		SetDseq(dseq).SetProvider(provider).SetHome(os.Getenv("AKASH_HOME")).
-		SetFrom(os.Getenv("AKASH_KEY_NAME")).OutputJson()
+	cmd := cli.AkashCli(ak).Provider().SendManifest(manifestLocation).
+		SetDseq(dseq).SetProvider(provider).SetHome(ak.Config.Home).
+		SetFrom(ak.Config.KeyName).OutputJson()
 
 	tflog.Debug(ak.ctx, strings.Join(cmd.AsCmd().Args, " "))
 
@@ -30,9 +29,9 @@ func (ak *AkashClient) SendManifest(dseq string, provider string, manifestLocati
 
 func (ak *AkashClient) GetLeaseStatus(dseq string, provider string) (*types.LeaseStatus, error) {
 
-	cmd := cli.AkashCli(ak.ctx).Provider().LeaseStatus().
-		SetHome(os.Getenv("AKASH_HOME")).SetDseq(dseq).SetProvider(provider).
-		SetFrom(os.Getenv("AKASH_KEY_NAME"))
+	cmd := cli.AkashCli(ak).Provider().LeaseStatus().
+		SetHome(ak.Config.Home).SetDseq(dseq).SetProvider(provider).
+		SetFrom(ak.Config.KeyName)
 
 	leaseStatus := types.LeaseStatus{}
 	err := cmd.DecodeJson(&leaseStatus)

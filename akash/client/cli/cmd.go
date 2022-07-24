@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"os/exec"
 	"strings"
@@ -25,7 +26,7 @@ func (c AkashCommand) Raw() ([]byte, error) {
 	cmd.Stderr = &errb
 	out, err := cmd.Output()
 	if err != nil {
-
+		tflog.Warn(c.ctx, fmt.Sprintf("Could not execute command: %s", err.Error()))
 		if strings.Contains(err.Error(), "error unmarshalling") {
 			return c.Raw()
 		}
@@ -45,6 +46,7 @@ func (c AkashCommand) DecodeJson(v any) error {
 	cmd.Stderr = &errb
 	out, err := cmd.Output()
 	if err != nil {
+		tflog.Warn(c.ctx, fmt.Sprintf("Could not execute command: %s", err.Error()))
 		if strings.Contains(err.Error(), "error unmarshalling") {
 			return c.DecodeJson(v)
 		}
