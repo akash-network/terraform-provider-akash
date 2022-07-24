@@ -1,5 +1,7 @@
 # Terraform Provider Akash
 
+You can find this 
+
 ## Pre-requisites
 For the provider to work properly you'll need:
 
@@ -8,6 +10,10 @@ For the provider to work properly you'll need:
 - Akash v0.16.3
 
 ## Installation
+
+You can visit the [registry](https://registry.terraform.io/providers/joao-luna-98/akash/latest) and follow the installations steps.
+
+**or**
 
 Move the binary file of the provider (check releases) to the following folder:
 ```shell

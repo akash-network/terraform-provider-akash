@@ -1,5 +1,4 @@
-# Resource `akash_deployment`
-# <resource name> Resource/Data Source
+# akash_deployment Resource
 
 The deployment resource allows you to create a deployment on the Akash Network.
 
