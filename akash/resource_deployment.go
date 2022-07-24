@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"os"
 	"strings"
 	"terraform-provider-akash/akash/client"
 	"terraform-provider-akash/akash/client/types"
@@ -17,8 +16,10 @@ import (
 
 const IdSeparator = ":"
 const DeploymentIdDseq = 0
-const DeploymentIdOwner = 1
-const DeploymentIdProvider = 2
+const DeploymentIdGseq = 1
+const DeploymentIdOseq = 2
+const DeploymentIdOwner = 3
+const DeploymentIdProvider = 4
 
 func resourceDeployment() *schema.Resource {
 	return &schema.Resource{
@@ -41,6 +42,14 @@ func resourceDeployment() *schema.Resource {
 				Computed: true,
 			},
 			"deployment_dseq": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"deployment_gseq": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"deployment_oseq": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -96,48 +105,48 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 		return diag.FromErr(err)
 	}
 
-	dseq, err := akash.CreateDeployment(manifestLocation)
+	seqs, err := akash.CreateDeployment(manifestLocation)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	bids, diagnostics := queryBids(ctx, akash, dseq)
+	bids, diagnostics := queryBids(ctx, akash, seqs)
 	if diagnostics != nil {
 		return diagnostics
 	}
 
 	provider := selectProvider(ctx, akash, bids)
 
-	if diagnostics := createLease(ctx, akash, dseq, provider); diagnostics != nil {
-		err := akash.DeleteDeployment(dseq, os.Getenv("AKASH_ACCOUNT_ADDRESS"))
+	if diagnostics := createLease(ctx, akash, seqs, provider); diagnostics != nil {
+		err := akash.DeleteDeployment(seqs.Dseq, akash.Config.AccountAddress)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 		return diagnostics
 	}
-	if diagnostics := sendManifest(ctx, akash, dseq, provider, manifestLocation); diagnostics != nil {
-		err := akash.DeleteDeployment(dseq, os.Getenv("AKASH_ACCOUNT_ADDRESS"))
+	if diagnostics := sendManifest(ctx, akash, seqs, provider, manifestLocation); diagnostics != nil {
+		err := akash.DeleteDeployment(seqs.Dseq, akash.Config.AccountAddress)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 		return diagnostics
 	}
-	if diagnostics := setCreatedState(d, dseq, provider); diagnostics != nil {
-		err := akash.DeleteDeployment(dseq, os.Getenv("AKASH_ACCOUNT_ADDRESS"))
+	if diagnostics := setCreatedState(d, akash.Config.AccountAddress, seqs, provider); diagnostics != nil {
+		err := akash.DeleteDeployment(seqs.Dseq, akash.Config.AccountAddress)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 		return diagnostics
 	}
 
-	d.SetId(dseq + IdSeparator + os.Getenv("AKASH_ACCOUNT_ADDRESS") + IdSeparator + provider)
+	d.SetId(seqs.Dseq + IdSeparator + seqs.Gseq + IdSeparator + seqs.Oseq + IdSeparator + akash.Config.AccountAddress + IdSeparator + provider)
 
 	return resourceDeploymentRead(ctx, d, m)
 }
 
-func queryBids(ctx context.Context, akash *client.AkashClient, dseq string) (types.Bids, diag.Diagnostics) {
+func queryBids(ctx context.Context, akash *client.AkashClient, seqs client.Seqs) (types.Bids, diag.Diagnostics) {
 	tflog.Debug(ctx, "Querying available bids")
-	bids, err := akash.GetBids(dseq, time.Minute)
+	bids, err := akash.GetBids(seqs, time.Minute)
 	if err != nil {
 		return nil, diag.FromErr(err)
 	}
@@ -148,10 +157,10 @@ func queryBids(ctx context.Context, akash *client.AkashClient, dseq string) (typ
 	return bids, nil
 }
 
-func sendManifest(ctx context.Context, akash *client.AkashClient, dseq string, provider string, manifestLocation string) diag.Diagnostics {
+func sendManifest(ctx context.Context, akash *client.AkashClient, seqs client.Seqs, provider string, manifestLocation string) diag.Diagnostics {
 	tflog.Info(ctx, "Sending the manifest")
 	// Send the manifest
-	res, err := akash.SendManifest(dseq, provider, manifestLocation)
+	res, err := akash.SendManifest(seqs.Dseq, provider, manifestLocation)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -159,11 +168,17 @@ func sendManifest(ctx context.Context, akash *client.AkashClient, dseq string, p
 	return nil
 }
 
-func setCreatedState(d *schema.ResourceData, dseq string, provider string) diag.Diagnostics {
-	if err := d.Set("deployment_dseq", dseq); err != nil {
+func setCreatedState(d *schema.ResourceData, address string, seqs client.Seqs, provider string) diag.Diagnostics {
+	if err := d.Set("deployment_dseq", seqs.Dseq); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("deployment_owner", os.Getenv("AKASH_ACCOUNT_ADDRESS")); err != nil {
+	if err := d.Set("deployment_gseq", seqs.Gseq); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("deployment_oseq", seqs.Oseq); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("deployment_owner", address); err != nil {
 		return diag.FromErr(err)
 	}
 	if err := d.Set("deployment_state", "active"); err != nil {
@@ -187,10 +202,10 @@ func selectProvider(ctx context.Context, akash *client.AkashClient, bids types.B
 	return provider
 }
 
-func createLease(ctx context.Context, akash *client.AkashClient, dseq string, provider string) diag.Diagnostics {
+func createLease(ctx context.Context, akash *client.AkashClient, seqs client.Seqs, provider string) diag.Diagnostics {
 	tflog.Info(ctx, "Creating lease")
 	// Create a lease
-	lease, err := akash.CreateLease(dseq, provider)
+	lease, err := akash.CreateLease(seqs, provider)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -230,7 +245,11 @@ func resourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m inter
 		return diag.FromErr(err)
 	}
 
-	leaseStatus, err := akash.GetLeaseStatus(deploymentId[DeploymentIdDseq], deploymentId[DeploymentIdProvider])
+	leaseStatus, err := akash.GetLeaseStatus(client.Seqs{
+		Dseq: deploymentId[DeploymentIdDseq],
+		Gseq: deploymentId[DeploymentIdGseq],
+		Oseq: deploymentId[DeploymentIdOseq],
+	}, deploymentId[DeploymentIdProvider])
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -257,18 +276,22 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, m int
 
 	deploymentId := strings.Split(d.Id(), IdSeparator)
 
-	dseq := deploymentId[DeploymentIdDseq]
+	seqs := client.Seqs{
+		Dseq: deploymentId[DeploymentIdDseq],
+		Gseq: deploymentId[DeploymentIdGseq],
+		Oseq: deploymentId[DeploymentIdOseq],
+	}
 	provider := deploymentId[DeploymentIdProvider]
 
 	if d.HasChange("sdl") {
 		manifestLocation, err := CreateTemporaryDeploymentFile(ctx, d.Get("sdl").(string))
 
 		// Update the deployment
-		if err := akash.UpdateDeployment(dseq, manifestLocation); err != nil {
+		if err := akash.UpdateDeployment(seqs.Dseq, manifestLocation); err != nil {
 			return diag.FromErr(err)
 		}
 
-		if diagnostics := sendManifest(ctx, akash, dseq, provider, manifestLocation); diagnostics != nil {
+		if diagnostics := sendManifest(ctx, akash, seqs, provider, manifestLocation); diagnostics != nil {
 			return diagnostics
 		}
 
