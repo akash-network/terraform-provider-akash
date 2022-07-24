@@ -1,11 +1,4 @@
----
-page_title: "Provider: Akash"
-subcategory: ""
-description: |-
-Terraform provider for interacting with the Akash Network.
----
-
-# Akash Provider
+# akash Provider
 
 The Akash provider is used to interact with the Akash Network.
 

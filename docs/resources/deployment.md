@@ -1,11 +1,5 @@
----
-page_title: "deployment Resource - terraform-provider-akash"
-subcategory: ""
-description: |-
-  The deployment resource allows you to create a deployment on the Akash Network.
----
-
 # Resource `akash_deployment`
+# <resource name> Resource/Data Source
 
 The deployment resource allows you to create a deployment on the Akash Network.
 
