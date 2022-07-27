@@ -15,6 +15,9 @@ provider "akash" {
   account_address = "akash1qyfg4zl2dku8ry7gjkhf88vnc3zrn6vmnzlvr9"
   keyring_backend = "os"
   key_name = "terraform"
+  node = "http://akash.c29r3.xyz:80/rpc"
+  chain_id = "akashnet-2"
+  chain_version = "0.16.4"
   home = "/Users/joaoluna/.akash"
   path = "/Users/joaoluna/Documents/Programming/terraform-akash-provider/bin/akash"
 }

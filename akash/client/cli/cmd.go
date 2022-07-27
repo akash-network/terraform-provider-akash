@@ -56,6 +56,7 @@ func (c AkashCommand) DecodeJson(v any) error {
 
 	err = json.NewDecoder(strings.NewReader(string(out))).Decode(v)
 	if err != nil {
+		tflog.Debug(c.ctx, fmt.Sprintf("Error while unmarshalling command output"))
 		return err
 	}
 
