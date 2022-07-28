@@ -2,12 +2,13 @@ package cli_test
 
 import (
 	"context"
+	"terraform-provider-akash/akash/client"
 	"terraform-provider-akash/akash/client/cli"
 	"testing"
 )
 
 func TestAkashCliAppendsSubcommands(t *testing.T) {
-	cmd := cli.AkashCli(context.TODO()).Query().Market().Bid().List()
+	cmd := cli.AkashCli(client.New(context.TODO(), client.AkashConfiguration{})).Query().Market().Bid().List()
 	expectedSize := 5
 
 	if len(cmd.Content) != expectedSize {
@@ -17,7 +18,7 @@ func TestAkashCliAppendsSubcommands(t *testing.T) {
 }
 
 func TestAkashCliHeadlessSizeIsCorrect(t *testing.T) {
-	cmd := cli.AkashCli(context.TODO()).Query().Market().Bid().List().Headless()
+	cmd := cli.AkashCli(client.New(context.TODO(), client.AkashConfiguration{})).Query().Market().Bid().List().Headless()
 	expectedSize := 4
 
 	if len(cmd) != expectedSize {

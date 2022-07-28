@@ -1,21 +1,25 @@
 package client
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"net/http"
-	"os"
 	"terraform-provider-akash/akash/client/cli"
 	"terraform-provider-akash/akash/client/types"
 	"time"
 )
 
+type Seqs struct {
+	Dseq string
+	Gseq string
+	Oseq string
+}
+
 func (ak *AkashClient) GetDeployments() ([]map[string]interface{}, error) {
 	client := &http.Client{Timeout: 10 * time.Second}
-	address := os.Getenv("AKASH_ACCOUNT_ADDRESS")
+	address := ak.Config.AccountAddress
 
 	req, err := http.NewRequest("GET", fmt.Sprintf("%s/akash/deployment/v1beta2/deployments/list?filters.owner=%s", "https://akash.c29r3.xyz/api", address), nil)
 	if err != nil {
@@ -83,56 +87,65 @@ func (ak *AkashClient) GetDeployment(dseq string, owner string) (map[string]inte
 	return d, nil
 }
 
-func (ak *AkashClient) CreateDeployment(manifestLocation string) (string, error) {
+func (ak *AkashClient) CreateDeployment(manifestLocation string) (Seqs, error) {
 
 	tflog.Debug(ak.ctx, "Creating deployment")
 	// Create deployment using the file created with the SDL
-	dseq, err := transactionCreateDeployment(ak.ctx, manifestLocation)
+	attributes, err := transactionCreateDeployment(ak, manifestLocation)
 	if err != nil {
 		tflog.Error(ak.ctx, "Failed creating deployment")
 		tflog.Debug(ak.ctx, fmt.Sprintf("%s", err))
-		return "", err
+		return Seqs{}, err
 	}
-	tflog.Info(ak.ctx, "Deployment created with DSEQ "+dseq)
 
-	return dseq, nil
+	dseq, _ := attributes.Get("dseq")
+	gseq, _ := attributes.Get("gseq")
+	oseq, _ := attributes.Get("oseq")
+
+	tflog.Info(ak.ctx, "Deployment created with DSEQ="+dseq+" GSEQ="+gseq+" OSEQ="+oseq)
+
+	return Seqs{dseq, gseq, oseq}, nil
 }
 
 // Perform the transaction to create the deployment and return either the DSEQ or an error.
-func transactionCreateDeployment(ctx context.Context, manifestLocation string) (string, error) {
-	cmd := cli.AkashCli(ctx).Tx().Deployment().Create().Manifest(manifestLocation).
-		DefaultGas().AutoAccept().SetFrom(os.Getenv("AKASH_KEY_NAME")).OutputJson()
+func transactionCreateDeployment(ak *AkashClient, manifestLocation string) (types.TransactionEventAttributes, error) {
+	cmd := cli.AkashCli(ak).Tx().Deployment().Create().Manifest(manifestLocation).
+		DefaultGas().AutoAccept().SetFrom(ak.Config.KeyName).SetKeyringBackend(ak.Config.KeyringBackend).
+		SetChainId(ak.Config.ChainId).SetNode(ak.Config.Node).OutputJson()
 
 	transaction := types.Transaction{}
 	if err := cmd.DecodeJson(&transaction); err != nil {
-		return "", err
+		return nil, err
 	}
 
 	if len(transaction.Logs) == 0 {
-		return "", errors.New(fmt.Sprintf("something went wrong: %s", transaction.RawLog))
+		return nil, errors.New(fmt.Sprintf("something went wrong: %s", transaction.RawLog))
 	}
 
-	return transaction.Logs[0].Events[0].Attributes.Get("dseq")
+	return transaction.Logs[0].Events[0].Attributes, nil
 }
 
-func (ak *AkashClient) DeleteDeployment(ctx context.Context, dseq string, owner string) error {
-	cmd := cli.AkashCli(ctx).Tx().Deployment().Close().
-		SetDseq(dseq).SetOwner(owner).SetFrom(os.Getenv("AKASH_KEY_NAME")).
-		DefaultGas().AutoAccept().OutputJson()
+func (ak *AkashClient) DeleteDeployment(dseq string, owner string) error {
+	cmd := cli.AkashCli(ak).Tx().Deployment().Close().
+		SetDseq(dseq).SetOwner(owner).SetFrom(ak.Config.KeyName).
+		DefaultGas().SetChainId(ak.Config.ChainId).SetKeyringBackend(ak.Config.KeyringBackend).
+		SetNode(ak.Config.Node).AutoAccept().OutputJson()
 
 	out, err := cmd.Raw()
 	if err != nil {
 		return err
 	}
 
-	tflog.Debug(ctx, fmt.Sprintf("Response: %s", out))
+	tflog.Debug(ak.ctx, fmt.Sprintf("Response: %s", out))
 
 	return nil
 }
 
 func (ak *AkashClient) UpdateDeployment(dseq string, manifestLocation string) error {
-	cmd := cli.AkashCli(ak.ctx).Tx().Deployment().Update().Manifest(manifestLocation).
-		SetDseq(dseq).SetFrom(os.Getenv("AKASH_KEY_NAME")).DefaultGas().AutoAccept().OutputJson()
+	cmd := cli.AkashCli(ak).Tx().Deployment().Update().Manifest(manifestLocation).
+		SetDseq(dseq).SetFrom(ak.Config.KeyName).SetNode(ak.Config.Node).
+		SetKeyringBackend(ak.Config.KeyringBackend).SetChainId(ak.Config.ChainId).
+		DefaultGas().AutoAccept().OutputJson()
 
 	out, err := cmd.Raw()
 	if err != nil {
