@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"os"
 	"terraform-provider-akash/akash/client"
 )
 
@@ -31,7 +32,7 @@ func Provider() *schema.Provider {
 			"net": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("AKASH_NET", ""),
+				DefaultFunc: schema.EnvDefaultFunc("AKASH_NET", "akash"),
 			},
 			"chain_version": &schema.Schema{
 				Type:        schema.TypeString,
@@ -49,14 +50,17 @@ func Provider() *schema.Provider {
 				DefaultFunc: schema.EnvDefaultFunc("AKASH_NODE", ""),
 			},
 			"home": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("AKASH_HOME", "~/.akash"),
+				Type:     schema.TypeString,
+				Optional: true,
+				DefaultFunc: schema.EnvDefaultFunc("AKASH_HOME", func() string {
+					homeDir, _ := os.UserHomeDir()
+					return homeDir + "/.akash"
+				}()),
 			},
 			"path": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("AKASH_PATH", ""),
+				DefaultFunc: schema.EnvDefaultFunc("AKASH_PATH", "akash"),
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
@@ -72,39 +76,35 @@ func Provider() *schema.Provider {
 func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 	tflog.Info(ctx, "Configuring the provider")
 
-	keyName := d.Get("key_name").(string)
-	keyringBackend := d.Get("keyring_backend").(string)
-	accountAddress := d.Get("account_address").(string)
-	net := d.Get("net").(string)
-	version := d.Get("chain_version").(string)
-	chainId := d.Get("chain_id").(string)
-	node := d.Get("node").(string)
-	home := d.Get("home").(string)
-	path := d.Get("path").(string)
+	config := map[string]string{
+		"key_name":        d.Get("key_name").(string),
+		"keyring_backend": d.Get("keyring_backend").(string),
+		"account_address": d.Get("account_address").(string),
+		"net":             d.Get("net").(string),
+		"chain_version":   d.Get("chain_version").(string),
+		"chain_id":        d.Get("chain_id").(string),
+		"node":            d.Get("node").(string),
+		"home":            d.Get("home").(string),
+		"path":            d.Get("path").(string),
+	}
 
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
-	if keyName == "" {
-		diags = append(diags, diag.Diagnostic{
-			Severity: diag.Error,
-			Summary:  "Unable to create Akash client",
-			Detail:   "Key name was not provided and is not available on the system",
-		})
-
+	if diags, valid := validateConfiguration(diags, config); !valid {
 		return nil, diags
 	}
 
 	configuration := client.AkashConfiguration{
-		KeyName:        keyName,
-		KeyringBackend: keyringBackend,
-		AccountAddress: accountAddress,
-		Net:            net,
-		Version:        version,
-		ChainId:        chainId,
-		Node:           node,
-		Home:           home,
-		Path:           path,
+		KeyName:        config["key_name"],
+		KeyringBackend: config["keyring_backend"],
+		AccountAddress: config["accountAddress"],
+		Net:            config["net"],
+		Version:        config["version"],
+		ChainId:        config["chainId"],
+		Node:           config["node"],
+		Home:           config["home"],
+		Path:           config["path"],
 	}
 
 	tflog.Debug(ctx, fmt.Sprintf("Starting provider with %+v", configuration))
@@ -112,4 +112,20 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	akash := client.New(ctx, configuration)
 
 	return akash, diags
+}
+
+func validateConfiguration(diags diag.Diagnostics, config map[string]string) (diag.Diagnostics, bool) {
+	for k, v := range config {
+		if v == "" {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  "Unable to create Akash client",
+				Detail:   fmt.Sprintf("Parameter '%s' was not provided and is not available on the system", k),
+			})
+
+			return diags, false
+		}
+	}
+
+	return nil, true
 }

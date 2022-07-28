@@ -27,7 +27,7 @@ func (c AkashCommand) Raw() ([]byte, error) {
 	out, err := cmd.Output()
 	if err != nil {
 		tflog.Warn(c.ctx, fmt.Sprintf("Could not execute command: %s", err.Error()))
-		if strings.Contains(err.Error(), "error unmarshalling") {
+		if strings.Contains(errb.String(), "error unmarshalling") {
 			return c.Raw()
 		}
 
@@ -47,7 +47,7 @@ func (c AkashCommand) DecodeJson(v any) error {
 	out, err := cmd.Output()
 	if err != nil {
 		tflog.Warn(c.ctx, fmt.Sprintf("Could not execute command: %s", err.Error()))
-		if strings.Contains(err.Error(), "error unmarshalling") {
+		if strings.Contains(errb.String(), "error unmarshalling") {
 			return c.DecodeJson(v)
 		}
 

@@ -18,8 +18,6 @@ provider "akash" {
   node = "http://akash.c29r3.xyz:80/rpc"
   chain_id = "akashnet-2"
   chain_version = "0.16.4"
-  home = "/Users/joaoluna/.akash"
-  path = "/Users/joaoluna/Documents/Programming/terraform-akash-provider/bin/akash"
 }
 
 resource "akash_deployment" "my_deployment" {
