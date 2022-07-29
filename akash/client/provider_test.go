@@ -8,7 +8,7 @@ import (
 )
 
 func TestFindCheapestReturnsErrorOnEmptyBidsList(t *testing.T) {
-	akash := client.New(context.TODO())
+	akash := client.New(context.TODO(), client.AkashConfiguration{})
 	provider, err := akash.FindCheapest(types.Bids{})
 	expectedError := "empty bid slice"
 

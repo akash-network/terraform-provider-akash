@@ -1,6 +1,6 @@
 # Terraform Provider Akash
 
-You can find this 
+<img src="diagram.png" alt="isolated" width="512"/>
 
 ## Pre-requisites
 For the provider to work properly you'll need:
@@ -37,6 +37,8 @@ Make sure you have the following environment variables in your machine in order 
 | `AKASH_NODE`            | Akash node to connect to.                                        |
 | `AKASH_HOME`            | Absolute path to the Akash's home folder, usually under ~/.akash |
 | `AKASH_PATH`            | (Optional) The path to the Akash binary                          |
+
+In alternative, you can pass these as the configuration of the provider
 
 ### Import current state
 To import your existing deployments to your `tfstate` you have to build the id of your deployment which consists of the dseq, your address and the provider's address separated by ":".
@@ -94,7 +96,7 @@ cd examples && terraform init && terraform apply --auto-approve
 ### Close the Deployment
 
 ```shell
-./bin/akash tx deployment close --dseq <dseq> --owner $AKASH_ACCOUNT_ADDRESS --from $AKASH_KEY_NAME -y --fees 800uakt --gas auto
+./bin/akash tx deployment close --dseq <dseq> --owner $AKASH_ACCOUNT_ADDRESS --from $AKASH_KEY_NAME -y --gas=auto --gas-adjustment=1.15 --gas-prices=0.025uakt
 ```
 
 ### Get deployment details
