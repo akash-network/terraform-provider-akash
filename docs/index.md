@@ -4,7 +4,7 @@ The Akash provider is used to interact with the Akash Network.
 
 ## Example Usage
 
-The provider configurations is as follows. It's recommended providers are configured this way for clarity:
+The provider configuration is as follows. It's recommended providers are configured this way for clarity:
 ```terraform
 provider "akash" {
   account_address = "string"
@@ -14,7 +14,7 @@ provider "akash" {
   chain_id = "string"
   chain_version = "string"
   home = "string (Default: ~/.akash)"
-  path = "string (Default: akash"
+  path = "string (Default: akash)"
 }
 ```
 
