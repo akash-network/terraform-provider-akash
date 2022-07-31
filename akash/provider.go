@@ -101,7 +101,7 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 		AccountAddress: config["accountAddress"],
 		Net:            config["net"],
 		Version:        config["version"],
-		ChainId:        config["chainId"],
+		ChainId:        config["chain_id"],
 		Node:           config["node"],
 		Home:           config["home"],
 		Path:           config["path"],

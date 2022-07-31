@@ -3,7 +3,7 @@ HOSTNAME=joaoluna.com
 NAMESPACE=cloud
 NAME=akash
 BINARY=terraform-provider-${NAME}
-VERSION=0.0.2
+VERSION=0.0.3
 OS_ARCH=darwin_arm64
 
 default: install
