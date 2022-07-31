@@ -10,46 +10,56 @@ import (
 	"terraform-provider-akash/akash/client"
 )
 
+const KeyName = "key_name"
+const KeyringBackend = "keyring_backend"
+const AccountAddress = "account_address"
+const Net = "net"
+const ChainVersion = "chain_version"
+const ChainId = "chain_id"
+const Node = "node"
+const Home = "home"
+const Path = "path"
+
 // Provider -
 func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
-			"key_name": &schema.Schema{
+			KeyName: &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("AKASH_KEY_NAME", ""),
 			},
-			"keyring_backend": &schema.Schema{
+			KeyringBackend: &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("AKASH_KEYRING_BACKEND", "os"),
 			},
-			"account_address": &schema.Schema{
+			AccountAddress: &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("AKASH_ACCOUNT_ADDRESS", ""),
 			},
-			"net": &schema.Schema{
+			Net: &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("AKASH_NET", "akash"),
 			},
-			"chain_version": &schema.Schema{
+			ChainVersion: &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("AKASH_VERSION", ""),
 			},
-			"chain_id": &schema.Schema{
+			ChainId: &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("AKASH_CHAIN_ID", ""),
 			},
-			"node": &schema.Schema{
+			Node: &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("AKASH_NODE", ""),
 			},
-			"home": &schema.Schema{
+			Home: &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
 				DefaultFunc: schema.EnvDefaultFunc("AKASH_HOME", func() string {
@@ -57,7 +67,7 @@ func Provider() *schema.Provider {
 					return homeDir + "/.akash"
 				}()),
 			},
-			"path": &schema.Schema{
+			Path: &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("AKASH_PATH", "akash"),
@@ -77,15 +87,15 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	tflog.Info(ctx, "Configuring the provider")
 
 	config := map[string]string{
-		"key_name":        d.Get("key_name").(string),
-		"keyring_backend": d.Get("keyring_backend").(string),
-		"account_address": d.Get("account_address").(string),
-		"net":             d.Get("net").(string),
-		"chain_version":   d.Get("chain_version").(string),
-		"chain_id":        d.Get("chain_id").(string),
-		"node":            d.Get("node").(string),
-		"home":            d.Get("home").(string),
-		"path":            d.Get("path").(string),
+		KeyName:        d.Get(KeyName).(string),
+		KeyringBackend: d.Get(KeyringBackend).(string),
+		AccountAddress: d.Get(AccountAddress).(string),
+		Net:            d.Get(Net).(string),
+		ChainVersion:   d.Get(ChainVersion).(string),
+		ChainId:        d.Get(ChainId).(string),
+		Node:           d.Get(Node).(string),
+		Home:           d.Get(Home).(string),
+		Path:           d.Get(Path).(string),
 	}
 
 	// Warning or errors can be collected in a slice type
@@ -96,15 +106,15 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	}
 
 	configuration := client.AkashConfiguration{
-		KeyName:        config["key_name"],
-		KeyringBackend: config["keyring_backend"],
-		AccountAddress: config["accountAddress"],
-		Net:            config["net"],
-		Version:        config["version"],
-		ChainId:        config["chain_id"],
-		Node:           config["node"],
-		Home:           config["home"],
-		Path:           config["path"],
+		KeyName:        config[KeyName],
+		KeyringBackend: config[KeyringBackend],
+		AccountAddress: config[AccountAddress],
+		Net:            config[Net],
+		Version:        config[ChainVersion],
+		ChainId:        config[ChainId],
+		Node:           config[Node],
+		Home:           config[Home],
+		Path:           config[Path],
 	}
 
 	tflog.Debug(ctx, fmt.Sprintf("Starting provider with %+v", configuration))
