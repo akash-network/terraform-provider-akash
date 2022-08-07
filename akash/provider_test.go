@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"os"
 	"testing"
 )
 
@@ -57,6 +58,8 @@ func TestProviderConfigure(t *testing.T) {
 		Home:           "test",
 		Path:           "test",
 	}}
+
+	os.Clearenv()
 
 	t.Run("should configure with valid configuration", func(t *testing.T) {
 		testConfig := config
