@@ -16,6 +16,10 @@ provider "akash" {
 
 resource "akash_deployment" "my_deployment" {
   sdl = file("./wordpress.yaml")
+  provider_filters {
+    provider_preferred = "none"
+    enforce = true
+  }
 }
 
 output "deployment_id" {

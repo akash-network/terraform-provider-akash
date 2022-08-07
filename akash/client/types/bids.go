@@ -18,3 +18,13 @@ type Bid struct {
 type BidId struct {
 	Provider string `json:"provider"`
 }
+
+func (b Bids) GetProviderAddresses() []string {
+	addresses := make([]string, 0, len(b))
+
+	for _, bid := range b {
+		addresses = append(addresses, bid.Id.Provider)
+	}
+
+	return addresses
+}

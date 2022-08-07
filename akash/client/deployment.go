@@ -89,7 +89,7 @@ func (ak *AkashClient) GetDeployment(dseq string, owner string) (map[string]inte
 
 func (ak *AkashClient) CreateDeployment(manifestLocation string) (Seqs, error) {
 
-	tflog.Debug(ak.ctx, "Creating deployment")
+	tflog.Info(ak.ctx, "Creating deployment")
 	// Create deployment using the file created with the SDL
 	attributes, err := transactionCreateDeployment(ak, manifestLocation)
 	if err != nil {
@@ -102,7 +102,7 @@ func (ak *AkashClient) CreateDeployment(manifestLocation string) (Seqs, error) {
 	gseq, _ := attributes.Get("gseq")
 	oseq, _ := attributes.Get("oseq")
 
-	tflog.Info(ak.ctx, "Deployment created with DSEQ="+dseq+" GSEQ="+gseq+" OSEQ="+oseq)
+	tflog.Info(ak.ctx, fmt.Sprintf("Deployment created with DSEQ=%s GSEQ=%s OSEQ=%s", dseq, gseq, oseq))
 
 	return Seqs{dseq, gseq, oseq}, nil
 }

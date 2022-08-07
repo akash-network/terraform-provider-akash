@@ -42,7 +42,7 @@ func Provider() *schema.Provider {
 			Net: &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("AKASH_NET", "akash"),
+				DefaultFunc: schema.EnvDefaultFunc("AKASH_NET", "mainnet"),
 			},
 			ChainVersion: &schema.Schema{
 				Type:        schema.TypeString,

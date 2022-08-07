@@ -8,6 +8,7 @@ import (
 	"strings"
 	"terraform-provider-akash/akash/client"
 	"terraform-provider-akash/akash/client/types"
+	"terraform-provider-akash/akash/util"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -73,6 +74,24 @@ func resourceDeployment() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"provider_filters": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"provider_preferred": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"enforce": {
+							Type:     schema.TypeBool,
+							Optional: true,
+						},
+					},
+				},
+			},
+
 			"services": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
@@ -115,23 +134,60 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 		return diagnostics
 	}
 
-	provider := selectProvider(ctx, akash, bids)
+	var provider string
+	bidsProviders := bids.GetProviderAddresses()
+
+	// Handle provider filters
+	if f, ok := d.GetOk("provider_filters"); ok {
+		tflog.Info(ctx, "Filters provided")
+
+		filters := f.([]interface{})
+		filter := filters[0].(map[string]interface{})
+		if !ok {
+			return diag.FromErr(errors.New("at least one field is expected inside filters"))
+		}
+
+		if preferredProvider, ok := filter["provider_preferred"]; ok && util.Contains(bidsProviders, preferredProvider.(string)) {
+			tflog.Info(ctx, "Accepting preferred provider's bid")
+			provider = preferredProvider.(string)
+		} else {
+			tflog.Warn(ctx, "Preferred provider did not bid")
+			if enforced, ok := filter["enforce"]; ok && enforced.(bool) {
+				tflog.Warn(ctx, "Could not find the preferred provider, deleting deployment")
+				if err := akash.DeleteDeployment(seqs.Dseq, akash.Config.AccountAddress); err != nil {
+					return diag.FromErr(err)
+				}
+				return diag.FromErr(errors.New("could not find the preferred provider"))
+			} else {
+				tflog.Warn(ctx, "Not enforcing filters, selecting another provider")
+				provider = selectProvider(ctx, akash, bids)
+			}
+		}
+	} else {
+		tflog.Info(ctx, "Filters were not provided")
+		provider = selectProvider(ctx, akash, bids)
+	}
 
 	if diagnostics := createLease(ctx, akash, seqs, provider); diagnostics != nil {
+		tflog.Warn(ctx, "Could not create lease, deleting deployment")
 		err := akash.DeleteDeployment(seqs.Dseq, akash.Config.AccountAddress)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 		return diagnostics
 	}
+
 	if diagnostics := sendManifest(ctx, akash, seqs, provider, manifestLocation); diagnostics != nil {
+		tflog.Warn(ctx, "Could not send manifest, deleting deployment")
 		err := akash.DeleteDeployment(seqs.Dseq, akash.Config.AccountAddress)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 		return diagnostics
 	}
+	tflog.Info(ctx, "Setting created state")
 	if diagnostics := setCreatedState(d, akash.Config.AccountAddress, seqs, provider); diagnostics != nil {
+		tflog.Warn(ctx, "Could not set state to created, deleting deployment")
 		err := akash.DeleteDeployment(seqs.Dseq, akash.Config.AccountAddress)
 		if err != nil {
 			return diag.FromErr(err)
@@ -145,7 +201,7 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 }
 
 func queryBids(ctx context.Context, akash *client.AkashClient, seqs client.Seqs) (types.Bids, diag.Diagnostics) {
-	tflog.Debug(ctx, "Querying available bids")
+	tflog.Info(ctx, "Querying available bids")
 	bids, err := akash.GetBids(seqs, time.Minute)
 	if err != nil {
 		return nil, diag.FromErr(err)
@@ -153,15 +209,15 @@ func queryBids(ctx context.Context, akash *client.AkashClient, seqs client.Seqs)
 	if len(bids) == 0 {
 		return nil, diag.FromErr(errors.New("no bids on deployment"))
 	}
-	tflog.Info(ctx, fmt.Sprintf("Received %d bids in the deployment", len(bids)))
+	tflog.Info(ctx, fmt.Sprintf("Received %d bids", len(bids)))
 	return bids, nil
 }
 
 func sendManifest(ctx context.Context, akash *client.AkashClient, seqs client.Seqs, provider string, manifestLocation string) diag.Diagnostics {
-	tflog.Info(ctx, "Sending the manifest")
-	// Send the manifest
+	tflog.Info(ctx, fmt.Sprintf("Sending manifest %s to %s", manifestLocation, provider))
 	res, err := akash.SendManifest(seqs.Dseq, provider, manifestLocation)
 	if err != nil {
+		tflog.Error(ctx, "Error sending manifest")
 		return diag.FromErr(err)
 	}
 	tflog.Debug(ctx, fmt.Sprintf("Result: %s", res))
@@ -191,7 +247,6 @@ func setCreatedState(d *schema.ResourceData, address string, seqs client.Seqs, p
 }
 
 func selectProvider(ctx context.Context, akash *client.AkashClient, bids types.Bids) string {
-	// Select the provider
 	provider, err := akash.FindCheapest(bids)
 	if err != nil {
 		diag.FromErr(err)
@@ -204,9 +259,9 @@ func selectProvider(ctx context.Context, akash *client.AkashClient, bids types.B
 
 func createLease(ctx context.Context, akash *client.AkashClient, seqs client.Seqs, provider string) diag.Diagnostics {
 	tflog.Info(ctx, "Creating lease")
-	// Create a lease
 	lease, err := akash.CreateLease(seqs, provider)
 	if err != nil {
+		tflog.Error(ctx, "Failed creating the lease")
 		return diag.FromErr(err)
 	}
 	tflog.Debug(ctx, fmt.Sprintf("Lease return: %s", lease))
@@ -254,6 +309,16 @@ func resourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m inter
 		return diag.FromErr(err)
 	}
 
+	services := extractServicesFromLeaseStatus(*leaseStatus)
+
+	if err := d.Set("services", services); err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func extractServicesFromLeaseStatus(leaseStatus types.LeaseStatus) []interface{} {
 	var services []interface{}
 
 	for key, value := range leaseStatus.Services {
@@ -263,12 +328,7 @@ func resourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m inter
 
 		services = append(services, service)
 	}
-
-	if err := d.Set("services", services); err != nil {
-		return diag.FromErr(err)
-	}
-
-	return diags
+	return services
 }
 
 func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -299,6 +359,10 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, m int
 		if err != nil {
 			return diag.FromErr(err)
 		}
+	}
+
+	if d.HasChange("provider_filters") {
+		tflog.Warn(ctx, "Ignoring filters on resource update")
 	}
 
 	return resourceDeploymentRead(ctx, d, m)
