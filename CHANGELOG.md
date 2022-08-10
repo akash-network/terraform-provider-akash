@@ -8,9 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.0.4] - 2022-08-07
 ### Added
-- Introduce provider filters
-- More unit tests
+- Introduce provider filters with `enforce` and `providers` filters
 ### Changed
-- Make temporary deployment file cross-platform
+- Make temporary deployment file location cross-platform
 ### Fixed
 - `net` field in provider configuration had wrong default value
+### Development
+- More unit tests
+- Implemented several string utilities including `CointainsAny` and `FindAll` functions

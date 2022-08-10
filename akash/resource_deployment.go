@@ -80,9 +80,10 @@ func resourceDeployment() *schema.Resource {
 				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"provider_preferred": {
-							Type:     schema.TypeString,
+						"providers": {
+							Type:     schema.TypeList,
 							Optional: true,
+							Elem:     schema.TypeString,
 						},
 						"enforce": {
 							Type:     schema.TypeBool,
@@ -147,9 +148,10 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 			return diag.FromErr(errors.New("at least one field is expected inside filters"))
 		}
 
-		if preferredProvider, ok := filter["provider_preferred"]; ok && util.Contains(bidsProviders, preferredProvider.(string)) {
+		if preferredProviders, ok := filter["providers"]; ok && util.ContainsAny(bidsProviders, preferredProviders.([]string)) {
 			tflog.Info(ctx, "Accepting preferred provider's bid")
-			provider = preferredProvider.(string)
+			preferredProvidersThatBid := util.FindAll(bidsProviders, preferredProviders.([]string))
+			provider = preferredProvidersThatBid[0] // Contains at least one, we choose the first one.
 		} else {
 			tflog.Warn(ctx, "Preferred provider did not bid")
 			if enforced, ok := filter["enforce"]; ok && enforced.(bool) {
