@@ -11,14 +11,16 @@ type BidWrapper struct {
 type Bids []Bid
 
 type Bid struct {
-	Id    BidId `json:"bid_id"`
-	Price struct {
-		Amount float32 `json:"amount,string"`
-	} `json:"price"`
+	Id    BidId    `json:"bid_id"`
+	Price BidPrice `json:"price"`
 }
 
 type BidId struct {
 	Provider string `json:"provider"`
+}
+
+type BidPrice struct {
+	Amount float32 `json:"amount,string"`
 }
 
 func (b Bids) GetProviderAddresses() []string {

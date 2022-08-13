@@ -8,16 +8,16 @@ import (
 
 func TestFilterPipeline_Execute(t *testing.T) {
 	pipeline := NewFilterPipeline(types.Bids{
-		types.Bid{Id: types.BidId{Provider: "test1"}, Amount: 42},
-		types.Bid{Id: types.BidId{Provider: "test2"}, Amount: 24},
-		types.Bid{Id: types.BidId{Provider: "test3"}, Amount: 37},
+		types.Bid{Id: types.BidId{Provider: "test1"}, Price: types.BidPrice{Amount: 42}},
+		types.Bid{Id: types.BidId{Provider: "test2"}, Price: types.BidPrice{Amount: 24}},
+		types.Bid{Id: types.BidId{Provider: "test3"}, Price: types.BidPrice{Amount: 37}},
 	})
 
 	t.Run("should return the expected bids", func(t *testing.T) {
 		result, _ := pipeline.Pipe(func(bids types.Bids) (types.Bids, error) {
 			newBids := make(types.Bids, 0)
 			for _, bid := range bids {
-				if bid.Amount < 40 {
+				if bid.Price.Amount < 40 {
 					newBids = append(newBids, bid)
 				}
 			}
@@ -38,15 +38,15 @@ func TestFilterPipeline_Cheapest(t *testing.T) {
 
 	t.Run("should return the cheapest bid with pipes", func(t *testing.T) {
 		pipeline := NewFilterPipeline(types.Bids{
-			types.Bid{Id: types.BidId{Provider: "test1"}, Amount: 42},
-			types.Bid{Id: types.BidId{Provider: "test2"}, Amount: 24},
-			types.Bid{Id: types.BidId{Provider: "test3"}, Amount: 37},
+			types.Bid{Id: types.BidId{Provider: "test1"}, Price: types.BidPrice{Amount: 42}},
+			types.Bid{Id: types.BidId{Provider: "test2"}, Price: types.BidPrice{Amount: 24}},
+			types.Bid{Id: types.BidId{Provider: "test3"}, Price: types.BidPrice{Amount: 37}},
 		})
 
 		result, _ := pipeline.Pipe(func(bids types.Bids) (types.Bids, error) {
 			newBids := make(types.Bids, 0)
 			for _, bid := range bids {
-				if bid.Amount > 30 {
+				if bid.Price.Amount > 30 {
 					newBids = append(newBids, bid)
 				}
 			}
@@ -60,9 +60,9 @@ func TestFilterPipeline_Cheapest(t *testing.T) {
 
 	t.Run("should return the cheapest bid without pipes", func(t *testing.T) {
 		pipeline := NewFilterPipeline(types.Bids{
-			types.Bid{Id: types.BidId{Provider: "test1"}, Amount: 42},
-			types.Bid{Id: types.BidId{Provider: "test2"}, Amount: 24},
-			types.Bid{Id: types.BidId{Provider: "test3"}, Amount: 37},
+			types.Bid{Id: types.BidId{Provider: "test1"}, Price: types.BidPrice{Amount: 42}},
+			types.Bid{Id: types.BidId{Provider: "test2"}, Price: types.BidPrice{Amount: 24}},
+			types.Bid{Id: types.BidId{Provider: "test3"}, Price: types.BidPrice{Amount: 37}},
 		})
 
 		result, _ := pipeline.Reduce(Cheapest)
@@ -76,9 +76,9 @@ func TestFilterPipeline_Cheapest(t *testing.T) {
 
 	t.Run("should return error if pipe fails", func(t *testing.T) {
 		pipeline := NewFilterPipeline(types.Bids{
-			types.Bid{Id: types.BidId{Provider: "test1"}, Amount: 42},
-			types.Bid{Id: types.BidId{Provider: "test2"}, Amount: 24},
-			types.Bid{Id: types.BidId{Provider: "test3"}, Amount: 37},
+			types.Bid{Id: types.BidId{Provider: "test1"}, Price: types.BidPrice{Amount: 42}},
+			types.Bid{Id: types.BidId{Provider: "test2"}, Price: types.BidPrice{Amount: 24}},
+			types.Bid{Id: types.BidId{Provider: "test3"}, Price: types.BidPrice{Amount: 37}},
 		})
 
 		_, err := pipeline.Pipe(func(bids types.Bids) (types.Bids, error) {
