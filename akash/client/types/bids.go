@@ -28,3 +28,27 @@ func (b Bids) GetProviderAddresses() []string {
 
 	return addresses
 }
+
+func (b Bids) FindByProvider(provider string) Bid {
+	for _, bid := range b {
+		if bid.Id.Provider == provider {
+			return bid
+		}
+	}
+
+	return Bid{}
+}
+
+// FindAllByProviders finds all the Bid structures that have any of the given providers.
+// It returns a slice of all the Bid structures where the providers were found.
+func (b Bids) FindAllByProviders(providers []string) Bids {
+	bids := make(Bids, 0)
+
+	for _, provider := range providers {
+		if bid := b.FindByProvider(provider); bid != (Bid{}) {
+			bids = append(bids, bid)
+		}
+	}
+
+	return bids
+}

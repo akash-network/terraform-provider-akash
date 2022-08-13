@@ -8,7 +8,8 @@ import (
 	"strings"
 	"terraform-provider-akash/akash/client"
 	"terraform-provider-akash/akash/client/types"
-	"terraform-provider-akash/akash/util"
+	"terraform-provider-akash/akash/extensions"
+	"terraform-provider-akash/akash/filtering"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -135,39 +136,11 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 		return diagnostics
 	}
 
-	var provider string
-	bidsProviders := bids.GetProviderAddresses()
-
-	// Handle provider filters
-	if f, ok := d.GetOk("provider_filters"); ok {
-		tflog.Info(ctx, "Filters provided")
-
-		filters := f.([]interface{})
-		filter := filters[0].(map[string]interface{})
-		if !ok {
-			return diag.FromErr(errors.New("at least one field is expected inside filters"))
+	provider, err := selectProvider(ctx, d, bids)
+	if err != nil {
+		if err := akash.DeleteDeployment(seqs.Dseq, akash.Config.AccountAddress); err != nil {
+			return diag.FromErr(err)
 		}
-
-		if preferredProviders, ok := filter["providers"]; ok && util.ContainsAny(bidsProviders, preferredProviders.([]string)) {
-			tflog.Info(ctx, "Accepting preferred provider's bid")
-			preferredProvidersThatBid := util.FindAll(bidsProviders, preferredProviders.([]string))
-			provider = preferredProvidersThatBid[0] // Contains at least one, we choose the first one.
-		} else {
-			tflog.Warn(ctx, "Preferred provider did not bid")
-			if enforced, ok := filter["enforce"]; ok && enforced.(bool) {
-				tflog.Warn(ctx, "Could not find the preferred provider, deleting deployment")
-				if err := akash.DeleteDeployment(seqs.Dseq, akash.Config.AccountAddress); err != nil {
-					return diag.FromErr(err)
-				}
-				return diag.FromErr(errors.New("could not find the preferred provider"))
-			} else {
-				tflog.Warn(ctx, "Not enforcing filters, selecting another provider")
-				provider = selectProvider(ctx, akash, bids)
-			}
-		}
-	} else {
-		tflog.Info(ctx, "Filters were not provided")
-		provider = selectProvider(ctx, akash, bids)
 	}
 
 	if diagnostics := createLease(ctx, akash, seqs, provider); diagnostics != nil {
@@ -248,15 +221,46 @@ func setCreatedState(d *schema.ResourceData, address string, seqs client.Seqs, p
 	return nil
 }
 
-func selectProvider(ctx context.Context, akash *client.AkashClient, bids types.Bids) string {
-	provider, err := akash.FindCheapest(bids)
-	if err != nil {
-		diag.FromErr(err)
-		return ""
+// This function gets all the configured filters and applies them. In the end it selects the cheapest provider.
+func selectProvider(ctx context.Context, d *schema.ResourceData, bids types.Bids) (string, error) {
+	filterPipeline := filtering.NewFilterPipeline(bids)
+
+	if f, ok := d.GetOk("provider_filters"); ok {
+		tflog.Info(ctx, "Filters provided")
+
+		filters := f.([]interface{})
+		filter := filters[0].(map[string]interface{})
+		if !ok {
+			return "", errors.New("at least one field is expected inside filters")
+		}
+
+		bidsProviders := bids.GetProviderAddresses()
+
+		if preferredProviders, ok := filter["providers"]; ok && extensions.ContainsAny(bidsProviders, preferredProviders.([]string)) {
+			tflog.Info(ctx, "Accepting preferred provider's bid")
+			// Add pipe to get bids of preferred providers
+			filterPipeline.Pipe(func(bids types.Bids) (types.Bids, error) {
+				return bids.FindAllByProviders(preferredProviders.([]string)), nil
+			})
+		} else {
+			tflog.Warn(ctx, "Preferred provider did not bid")
+			if enforced, ok := filter["enforce"]; ok && enforced.(bool) {
+				tflog.Warn(ctx, "Could not find the preferred provider, deleting deployment")
+				return "", errors.New("could not find the preferred provider")
+			} else {
+				tflog.Warn(ctx, "Not enforcing filters, selecting another provider")
+			}
+		}
+	} else {
+		tflog.Info(ctx, "Filters were not provided")
 	}
 
-	tflog.Debug(ctx, fmt.Sprintf("Selected provider %s", provider))
-	return provider
+	bid, err := filterPipeline.Reduce(filtering.Cheapest)
+	if err != nil {
+		return "", err
+	}
+
+	return bid.Id.Provider, nil
 }
 
 func createLease(ctx context.Context, akash *client.AkashClient, seqs client.Seqs, provider string) diag.Diagnostics {

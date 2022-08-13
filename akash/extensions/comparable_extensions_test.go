@@ -1,4 +1,4 @@
-package util
+package extensions
 
 import "testing"
 
@@ -34,11 +34,12 @@ func TestContainsAny(t *testing.T) {
 	})
 }
 
-func TestFindAlly(t *testing.T) {
-	testSlice := []string{"A", "B", "C", "D", "test", "F"}
+func TestUnion(t *testing.T) {
+	type Test struct{ x string }
+	testSlice := []Test{{"A"}, {"B"}, {"C"}, {"D"}, {"test"}, {"F"}}
 
 	t.Run("should return a slice containing finds", func(t *testing.T) {
-		finds := FindAll(testSlice, []string{"yes", "test", "A", "there"})
+		finds := Union(testSlice, []Test{{"yes"}, {"test"}, {"A"}, {"there"}})
 		if len(finds) != 2 {
 			t.Errorf("Expected to find %d but found %d (%v)", 2, len(finds), finds)
 		}
