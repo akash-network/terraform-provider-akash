@@ -51,7 +51,7 @@ func Cheapest(bids types.Bids) (types.Bid, error) {
 	var cheapestBid types.Bid
 
 	for _, bid := range bids {
-		if cheapestBid == (types.Bid{}) || cheapestBid != (types.Bid{}) && bid.Amount < cheapestBid.Amount {
+		if cheapestBid == (types.Bid{}) || cheapestBid != (types.Bid{}) && bid.Price.Amount < cheapestBid.Price.Amount {
 			cheapestBid = bid
 		}
 	}

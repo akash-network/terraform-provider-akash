@@ -84,7 +84,7 @@ func resourceDeployment() *schema.Resource {
 						"providers": {
 							Type:     schema.TypeList,
 							Optional: true,
-							Elem:     schema.TypeString,
+							Elem:     &schema.Schema{Type: schema.TypeString},
 						},
 						"enforce": {
 							Type:     schema.TypeBool,
@@ -141,6 +141,8 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 		if err := akash.DeleteDeployment(seqs.Dseq, akash.Config.AccountAddress); err != nil {
 			return diag.FromErr(err)
 		}
+
+		return diag.FromErr(err)
 	}
 
 	if diagnostics := createLease(ctx, akash, seqs, provider); diagnostics != nil {
@@ -190,12 +192,11 @@ func queryBids(ctx context.Context, akash *client.AkashClient, seqs client.Seqs)
 
 func sendManifest(ctx context.Context, akash *client.AkashClient, seqs client.Seqs, provider string, manifestLocation string) diag.Diagnostics {
 	tflog.Info(ctx, fmt.Sprintf("Sending manifest %s to %s", manifestLocation, provider))
-	res, err := akash.SendManifest(seqs.Dseq, provider, manifestLocation)
+	_, err := akash.SendManifest(seqs.Dseq, provider, manifestLocation)
 	if err != nil {
 		tflog.Error(ctx, "Error sending manifest")
 		return diag.FromErr(err)
 	}
-	tflog.Debug(ctx, fmt.Sprintf("Result: %s", res))
 	return nil
 }
 
@@ -236,17 +237,28 @@ func selectProvider(ctx context.Context, d *schema.ResourceData, bids types.Bids
 
 		bidsProviders := bids.GetProviderAddresses()
 
-		if preferredProviders, ok := filter["providers"]; ok && extensions.ContainsAny(bidsProviders, preferredProviders.([]string)) {
+		uncastProviders, ok := filter["providers"].([]interface{})
+		if !ok {
+			tflog.Debug(ctx, fmt.Sprintf("Could not convert: %+v\n", filter["providers"]))
+			return "", errors.New("could not get 'providers' filter")
+		}
+
+		preferredProviders := make([]string, len(uncastProviders))
+		for _, uncastProvider := range uncastProviders {
+			preferredProviders = append(preferredProviders, uncastProvider.(string))
+		}
+
+		if extensions.ContainsAny(bidsProviders, preferredProviders) {
 			tflog.Info(ctx, "Accepting preferred provider's bid")
 			// Add pipe to get bids of preferred providers
 			filterPipeline.Pipe(func(bids types.Bids) (types.Bids, error) {
-				return bids.FindAllByProviders(preferredProviders.([]string)), nil
+				return bids.FindAllByProviders(preferredProviders), nil
 			})
 		} else {
 			tflog.Warn(ctx, "Preferred provider did not bid")
 			if enforced, ok := filter["enforce"]; ok && enforced.(bool) {
 				tflog.Warn(ctx, "Could not find the preferred provider, deleting deployment")
-				return "", errors.New("could not find the preferred provider")
+				return "", errors.New("preferred providers did not bid")
 			} else {
 				tflog.Warn(ctx, "Not enforcing filters, selecting another provider")
 			}
@@ -260,6 +272,7 @@ func selectProvider(ctx context.Context, d *schema.ResourceData, bids types.Bids
 		return "", err
 	}
 
+	tflog.Info(ctx, fmt.Sprintf("Selected %s for %fuakt", bid.Id.Provider, bid.Price.Amount))
 	return bid.Id.Provider, nil
 }
 

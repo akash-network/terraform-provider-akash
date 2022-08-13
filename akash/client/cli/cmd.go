@@ -34,6 +34,8 @@ func (c AkashCommand) Raw() ([]byte, error) {
 		return nil, errors.New(errb.String())
 	}
 
+	tflog.Trace(c.ctx, fmt.Sprintf("Output: %s", out))
+
 	return out, nil
 }
 
@@ -53,6 +55,8 @@ func (c AkashCommand) DecodeJson(v any) error {
 
 		return errors.New(errb.String())
 	}
+
+	tflog.Trace(c.ctx, fmt.Sprintf("Output: %s", out))
 
 	err = json.NewDecoder(strings.NewReader(string(out))).Decode(v)
 	if err != nil {

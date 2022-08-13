@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Make temporary deployment file location cross-platform
 ### Fixed
 - `net` field in provider configuration had wrong default value
+- Bug where cheapest bids were not being selected
 ### Development
 - More unit tests
 - Implemented several string utilities including `CointainsAny` and `FindAll` functions
