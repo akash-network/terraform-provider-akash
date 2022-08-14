@@ -12,7 +12,6 @@ func (ak *AkashClient) GetBids(seqs Seqs, timeout time.Duration) (types.Bids, er
 	bids := types.Bids{}
 	for timeout > 0 && len(bids) <= 0 {
 		startTime := time.Now()
-		// Check bids on deployments and choose one
 		currentBids, err := queryBidList(ak, seqs)
 		if err != nil {
 			tflog.Error(ak.ctx, "Failed to query bid list")
@@ -22,7 +21,6 @@ func (ak *AkashClient) GetBids(seqs Seqs, timeout time.Duration) (types.Bids, er
 		}
 		tflog.Debug(ak.ctx, fmt.Sprintf("Received %d bids", len(bids)))
 		bids = currentBids
-		time.Sleep(time.Second)
 		timeout -= time.Since(startTime)
 	}
 
