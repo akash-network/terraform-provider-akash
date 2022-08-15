@@ -24,42 +24,42 @@ const Path = "path"
 func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
-			KeyName: &schema.Schema{
+			KeyName: {
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("AKASH_KEY_NAME", ""),
 			},
-			KeyringBackend: &schema.Schema{
+			KeyringBackend: {
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("AKASH_KEYRING_BACKEND", "os"),
 			},
-			AccountAddress: &schema.Schema{
+			AccountAddress: {
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("AKASH_ACCOUNT_ADDRESS", ""),
 			},
-			Net: &schema.Schema{
+			Net: {
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("AKASH_NET", "mainnet"),
 			},
-			ChainVersion: &schema.Schema{
+			ChainVersion: {
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("AKASH_VERSION", ""),
 			},
-			ChainId: &schema.Schema{
+			ChainId: {
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("AKASH_CHAIN_ID", ""),
 			},
-			Node: &schema.Schema{
+			Node: {
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("AKASH_NODE", ""),
 			},
-			Home: &schema.Schema{
+			Home: {
 				Type:     schema.TypeString,
 				Optional: true,
 				DefaultFunc: schema.EnvDefaultFunc("AKASH_HOME", func() string {
@@ -67,7 +67,7 @@ func Provider() *schema.Provider {
 					return homeDir + "/.akash"
 				}()),
 			},
-			Path: &schema.Schema{
+			Path: {
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("AKASH_PATH", "akash"),
