@@ -145,7 +145,7 @@ func (ak *AkashClient) UpdateDeployment(dseq string, manifestLocation string) er
 	cmd := cli.AkashCli(ak).Tx().Deployment().Update().Manifest(manifestLocation).
 		SetDseq(dseq).SetFrom(ak.Config.KeyName).SetNode(ak.Config.Node).
 		SetKeyringBackend(ak.Config.KeyringBackend).SetChainId(ak.Config.ChainId).
-		DefaultGas().AutoAccept().OutputJson()
+		GasAuto().SetGasAdjustment(1.5).SetGasPrices().SetSignMode("amino-json").AutoAccept().OutputJson()
 
 	out, err := cmd.Raw()
 	if err != nil {
