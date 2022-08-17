@@ -1,7 +1,6 @@
 package client
 
 import (
-	"errors"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"terraform-provider-akash/akash/client/cli"
@@ -38,23 +37,4 @@ func (ak *AkashClient) GetLeaseStatus(seqs Seqs, provider string) (*types.LeaseS
 	}
 
 	return &leaseStatus, nil
-}
-
-func (ak *AkashClient) FindCheapest(bids types.Bids) (string, error) {
-	if len(bids) == 0 {
-		tflog.Error(ak.ctx, "Empty bid slice")
-		return "", errors.New("empty bid slice")
-	}
-
-	var cheapestBid *types.Bid = nil
-
-	tflog.Info(ak.ctx, "Finding cheapest bid")
-
-	for _, bid := range bids {
-		if cheapestBid == nil || cheapestBid != nil && bid.Amount < cheapestBid.Amount {
-			cheapestBid = &bid
-		}
-	}
-
-	return cheapestBid.Id.Provider, nil
 }

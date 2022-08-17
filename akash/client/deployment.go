@@ -89,7 +89,7 @@ func (ak *AkashClient) GetDeployment(dseq string, owner string) (map[string]inte
 
 func (ak *AkashClient) CreateDeployment(manifestLocation string) (Seqs, error) {
 
-	tflog.Debug(ak.ctx, "Creating deployment")
+	tflog.Info(ak.ctx, "Creating deployment")
 	// Create deployment using the file created with the SDL
 	attributes, err := transactionCreateDeployment(ak, manifestLocation)
 	if err != nil {
@@ -102,7 +102,7 @@ func (ak *AkashClient) CreateDeployment(manifestLocation string) (Seqs, error) {
 	gseq, _ := attributes.Get("gseq")
 	oseq, _ := attributes.Get("oseq")
 
-	tflog.Info(ak.ctx, "Deployment created with DSEQ="+dseq+" GSEQ="+gseq+" OSEQ="+oseq)
+	tflog.Info(ak.ctx, fmt.Sprintf("Deployment created with DSEQ=%s GSEQ=%s OSEQ=%s", dseq, gseq, oseq))
 
 	return Seqs{dseq, gseq, oseq}, nil
 }
@@ -145,7 +145,7 @@ func (ak *AkashClient) UpdateDeployment(dseq string, manifestLocation string) er
 	cmd := cli.AkashCli(ak).Tx().Deployment().Update().Manifest(manifestLocation).
 		SetDseq(dseq).SetFrom(ak.Config.KeyName).SetNode(ak.Config.Node).
 		SetKeyringBackend(ak.Config.KeyringBackend).SetChainId(ak.Config.ChainId).
-		DefaultGas().AutoAccept().OutputJson()
+		GasAuto().SetGasAdjustment(1.5).SetGasPrices().SetSignMode("amino-json").AutoAccept().OutputJson()
 
 	out, err := cmd.Raw()
 	if err != nil {

@@ -105,6 +105,12 @@ cd examples && terraform init && terraform apply --auto-approve
 ./bin/akash provider lease-status --home ~/.akash --dseq <dseq> --provider <provider>
 ```
 
+### Get logs
+
+```shell
+./bin/akash provider lease-logs --dseq <dseq> --provider <provider> --from "$AKASH_KEY_NAME"
+```
+
 ## Troubleshooting
 
 ### `Error: error unmarshalling: invalid character '<' looking for beginning of value`

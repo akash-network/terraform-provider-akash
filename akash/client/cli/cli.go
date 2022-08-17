@@ -121,8 +121,8 @@ func (c AkashCommand) SetFrom(key string) AkashCommand {
 func (c AkashCommand) GasAuto() AkashCommand {
 	return c.append("--gas=auto")
 }
-func (c AkashCommand) SetGasAdjustment() AkashCommand {
-	return c.append("--gas-adjustment=1.15")
+func (c AkashCommand) SetGasAdjustment(adjustment float32) AkashCommand {
+	return c.append(fmt.Sprintf("--gas-adjustment=%2f", adjustment))
 }
 
 func (c AkashCommand) SetGasPrices() AkashCommand {
