@@ -19,6 +19,10 @@ func dataSourceDeployments() *schema.Resource {
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"id": &schema.Schema{
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 						"deployment_state": &schema.Schema{
 							Type:     schema.TypeString,
 							Computed: true,
@@ -44,7 +48,7 @@ func dataSourceDeploymentsRead(ctx context.Context, d *schema.ResourceData, m in
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
-	deployments, err := akash.GetDeployments()
+	deployments, err := akash.GetDeployments(akash.Config.AccountAddress)
 	if err != nil {
 		return diag.FromErr(err)
 	}

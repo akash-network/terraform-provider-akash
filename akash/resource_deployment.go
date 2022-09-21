@@ -120,9 +120,12 @@ func resourceDeployment() *schema.Resource {
 func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	akash := m.(*client.AkashClient)
 
+	var diags diag.Diagnostics
+
 	manifestLocation, err := CreateTemporaryDeploymentFile(ctx, d.Get("sdl").(string))
 
 	if err != nil {
+		diags = append(diags)
 		return diag.FromErr(err)
 	}
 
@@ -149,7 +152,8 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 		tflog.Warn(ctx, "Could not create lease, deleting deployment")
 		err := akash.DeleteDeployment(seqs.Dseq, akash.Config.AccountAddress)
 		if err != nil {
-			return diag.FromErr(err)
+			// TODO: Add diagnostic warning saying deployment was not deleted
+			return append(diagnostics, diag.FromErr(err)...)
 		}
 		return diagnostics
 	}
@@ -158,7 +162,7 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 		tflog.Warn(ctx, "Could not send manifest, deleting deployment")
 		err := akash.DeleteDeployment(seqs.Dseq, akash.Config.AccountAddress)
 		if err != nil {
-			return diag.FromErr(err)
+			return append(diagnostics, diag.FromErr(err)...)
 		}
 		return diagnostics
 	}
@@ -167,7 +171,7 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 		tflog.Warn(ctx, "Could not set state to created, deleting deployment")
 		err := akash.DeleteDeployment(seqs.Dseq, akash.Config.AccountAddress)
 		if err != nil {
-			return diag.FromErr(err)
+			return append(diagnostics, diag.FromErr(err)...)
 		}
 		return diagnostics
 	}
@@ -300,22 +304,22 @@ func resourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m inter
 		return diag.FromErr(err)
 	}
 
-	if err := d.Set("deployment_dseq", deployment["deployment_dseq"]); err != nil {
+	if err := d.Set("deployment_dseq", deployment.DeploymentInfo.DeploymentId.Dseq); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("deployment_owner", deployment["deployment_owner"]); err != nil {
+	if err := d.Set("deployment_owner", deployment.DeploymentInfo.DeploymentId.Owner); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("deployment_state", deployment["deployment_state"]); err != nil {
+	if err := d.Set("deployment_state", deployment.DeploymentInfo.State); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("escrow_account_owner", deployment["escrow_account_owner"]); err != nil {
+	if err := d.Set("escrow_account_owner", deployment.EscrowAccount.Owner); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("escrow_account_balance_denom", deployment["escrow_account_balance_denom"]); err != nil {
+	if err := d.Set("escrow_account_balance_denom", deployment.EscrowAccount.Balance.Denom); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("escrow_account_balance_amount", deployment["escrow_account_balance_amount"]); err != nil {
+	if err := d.Set("escrow_account_balance_amount", deployment.EscrowAccount.Balance.Amount); err != nil {
 		return diag.FromErr(err)
 	}
 

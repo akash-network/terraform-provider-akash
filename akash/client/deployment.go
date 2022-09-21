@@ -1,14 +1,11 @@
 package client
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"net/http"
 	"terraform-provider-akash/akash/client/cli"
 	"terraform-provider-akash/akash/client/types"
-	"time"
 )
 
 type Seqs struct {
@@ -17,74 +14,21 @@ type Seqs struct {
 	Oseq string
 }
 
-func (ak *AkashClient) GetDeployments() ([]map[string]interface{}, error) {
-	client := &http.Client{Timeout: 10 * time.Second}
-	address := ak.Config.AccountAddress
-
-	req, err := http.NewRequest("GET", fmt.Sprintf("%s/akash/deployment/v1beta2/deployments/list?filters.owner=%s", "https://akash.c29r3.xyz/api", address), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	r, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer r.Body.Close()
-
-	parsed := types.DeploymentResponse{}
-
-	err = json.NewDecoder(r.Body).Decode(&parsed)
-	if err != nil {
-		return nil, err
-	}
-
-	parsedDeployments := parsed.Deployments
-	deployments := make([]map[string]interface{}, 0)
-
-	for _, deployment := range parsedDeployments {
-		d := make(map[string]interface{})
-		d["deployment_state"] = deployment.DeploymentInfo.State
-		d["deployment_dseq"] = deployment.DeploymentInfo.DeploymentId.Dseq
-		d["deployment_owner"] = deployment.DeploymentInfo.DeploymentId.Owner
-
-		deployments = append(deployments, d)
-	}
-
-	return deployments, nil
+func (ak *AkashClient) GetDeployments(owner string) ([]types.DeploymentId, error) {
+	panic("Not implemented")
 }
 
-func (ak *AkashClient) GetDeployment(dseq string, owner string) (map[string]interface{}, error) {
-	client := &http.Client{Timeout: 10 * time.Second}
-
-	req, err := http.NewRequest("GET", fmt.Sprintf("%s/akash/deployment/v1beta2/deployments/info?id.owner=%s&id.dseq=%s", "https://akash.c29r3.xyz/api", owner, dseq), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	r, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer r.Body.Close()
+func (ak *AkashClient) GetDeployment(dseq string, owner string) (types.Deployment, error) {
+	cmd := cli.AkashCli(ak).Query().Deployment().Get().SetOwner(owner).SetDseq(dseq).SetChainId(ak.Config.ChainId).
+		SetNode(ak.Config.Node).OutputJson()
 
 	deployment := types.Deployment{}
-
-	err = json.NewDecoder(r.Body).Decode(&deployment)
+	err := cmd.DecodeJson(&deployment)
 	if err != nil {
-		return nil, err
+		return types.Deployment{}, err
 	}
 
-	d := make(map[string]interface{})
-	d["deployment_state"] = deployment.DeploymentInfo.State
-	d["deployment_dseq"] = deployment.DeploymentInfo.DeploymentId.Dseq
-	d["deployment_owner"] = deployment.DeploymentInfo.DeploymentId.Owner
-	d["escrow_account_owner"] = deployment.EscrowAccount.Owner
-	d["escrow_account_state"] = deployment.EscrowAccount.State
-	d["escrow_account_balance_amount"] = deployment.EscrowAccount.Balance.Amount
-	d["escrow_account_balance_denom"] = deployment.EscrowAccount.Balance.Denom
-
-	return d, nil
+	return deployment, nil
 }
 
 func (ak *AkashClient) CreateDeployment(manifestLocation string) (Seqs, error) {

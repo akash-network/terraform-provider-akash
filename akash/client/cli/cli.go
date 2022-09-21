@@ -36,6 +36,10 @@ func (c AkashCommand) Deployment() AkashCommand {
 	return c.append("deployment")
 }
 
+func (c AkashCommand) Get() AkashCommand {
+	return c.append("get")
+}
+
 func (c AkashCommand) Create() AkashCommand {
 	return c.append("create")
 }
