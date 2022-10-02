@@ -145,6 +145,10 @@ func (c AkashCommand) SetKeyringBackend(keyringBackend string) AkashCommand {
 	return c.append("--keyring-backend").append(keyringBackend)
 }
 
+func (c AkashCommand) SetNote(note string) AkashCommand {
+	return c.append(fmt.Sprintf("--note=\"%s\"", note))
+}
+
 func (c AkashCommand) SetSignMode(mode string) AkashCommand {
 	supportedModes := map[string]bool{
 		"default":    true,

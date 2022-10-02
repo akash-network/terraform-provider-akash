@@ -5,8 +5,9 @@ import (
 )
 
 type AkashClient struct {
-	ctx    context.Context
-	Config AkashConfiguration
+	ctx             context.Context
+	Config          AkashConfiguration
+	transactionNote string
 }
 
 type AkashConfiguration struct {
@@ -27,6 +28,10 @@ func (ak *AkashClient) GetContext() context.Context {
 
 func (ak *AkashClient) GetPath() string {
 	return ak.Config.Path
+}
+
+func (ak *AkashClient) SetGlobalTransactionNote(note string) {
+	ak.transactionNote = note
 }
 
 func New(ctx context.Context, configuration AkashConfiguration) *AkashClient {
