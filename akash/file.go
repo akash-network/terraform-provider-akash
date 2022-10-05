@@ -3,10 +3,11 @@ package akash
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"io/ioutil"
 	"os"
 	"time"
+
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 func CreateTemporaryDeploymentFile(ctx context.Context, sdl string) (string, error) {
