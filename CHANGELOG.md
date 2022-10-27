@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Bug where destroying deployments did not really close them
 - Owner not being set in Go client for bid listing
+- Issue on temporary folder on some OS
 ### Development
 - Replaced HTTP API call for deployments with CLI
 

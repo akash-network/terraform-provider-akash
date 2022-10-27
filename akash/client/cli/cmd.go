@@ -17,6 +17,10 @@ func (c AkashCommand) AsCmd() *exec.Cmd {
 	)
 }
 
+type AkashErrorResponse struct {
+	RawLog string `json:"raw_log"`
+}
+
 func (c AkashCommand) Raw() ([]byte, error) {
 	cmd := c.AsCmd()
 
@@ -29,6 +33,18 @@ func (c AkashCommand) Raw() ([]byte, error) {
 		tflog.Warn(c.ctx, fmt.Sprintf("Could not execute command: %s", err.Error()))
 		if strings.Contains(errb.String(), "error unmarshalling") {
 			return c.Raw()
+		}
+
+		var akErr AkashErrorResponse
+		err := json.Unmarshal(out, &akErr)
+		if err != nil {
+			tflog.Error(c.ctx, fmt.Sprintf("Failure unmarshalling error: %s", err))
+			tflog.Debug(c.ctx, string(out))
+		}
+
+		if strings.Contains(akErr.RawLog, "out of gas in location") {
+			tflog.Info(c.ctx, "Transaction ran out of gas")
+			return nil, errors.New(akErr.RawLog)
 		}
 
 		return nil, errors.New(errb.String())
