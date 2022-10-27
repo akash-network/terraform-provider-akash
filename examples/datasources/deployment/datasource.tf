@@ -8,7 +8,7 @@ terraform {
 }
 
 provider "akash" {
-  account_address = "<address>>"
+  account_address = "<address>"
   keyring_backend = "os"
   key_name = "terraform"
   node = "http://akash.c29r3.xyz:80/rpc"

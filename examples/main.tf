@@ -6,13 +6,13 @@ terraform {
   required_providers {
     akash = {
       version = "0.0.5"
-      source  = "joaoluna.com/cloud/akash"
+      source  = "cloud-j-luna/akash"
     }
   }
 }
 
 provider "akash" {
-  account_address = "akash1qyfg4zl2dku8ry7gjkhf88vnc3zrn6vmnzlvr9"
+  account_address = "<address>"
   keyring_backend = "os"
   key_name = "terraform"
   node = "http://akash.c29r3.xyz:80/rpc"
@@ -23,7 +23,7 @@ provider "akash" {
 resource "akash_deployment" "my_deployment" {
   sdl = file("./wordpress.yaml")
   provider_filters {
-    providers = ["akash123"]
+    providers = ["akashpreferredprovider"]
     enforce = false
   }
 }
