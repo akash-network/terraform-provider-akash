@@ -5,6 +5,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Transaction memo stating the Terraform provider was used and which version
+### Fixed
+- Bug where destroying deployments did not really close them
+- Owner not being set in Go client for bid listing
+- Issue on temporary folder on some OS
+### Development
+- Replaced HTTP API call for deployments with CLI
 
 ## [0.0.4] - 2022-08-17
 ### Added

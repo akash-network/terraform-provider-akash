@@ -121,6 +121,8 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 
 	akash := client.New(ctx, configuration)
 
+	akash.SetGlobalTransactionNote("Akash Terraform Provider - [provider=\"cloud-j-luna/akash\" version=\"0.0.5\"]")
+
 	return akash, diags
 }
 

@@ -30,7 +30,7 @@ func (ak *AkashClient) GetBids(seqs Seqs, timeout time.Duration) (types.Bids, er
 func queryBidList(ak *AkashClient, seqs Seqs) (types.Bids, error) {
 	cmd := cli.AkashCli(ak).Query().Market().Bid().List().
 		SetDseq(seqs.Dseq).SetGseq(seqs.Gseq).SetOseq(seqs.Oseq).
-		SetChainId(ak.Config.ChainId).SetNode(ak.Config.Node).OutputJson()
+		SetOwner(ak.Config.AccountAddress).SetChainId(ak.Config.ChainId).SetNode(ak.Config.Node).OutputJson()
 
 	bidsSliceWrapper := types.BidsSliceWrapper{}
 	if err := cmd.DecodeJson(&bidsSliceWrapper); err != nil {

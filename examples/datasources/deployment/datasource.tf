@@ -1,7 +1,3 @@
-/**
- * Use this file as the starting point for testing this provider.
- **/
-
 terraform {
   required_providers {
     akash = {
@@ -20,14 +16,8 @@ provider "akash" {
   chain_version = "0.16.4"
 }
 
-resource "akash_deployment" "my_deployment" {
-  sdl = file("./wordpress.yaml")
-  provider_filters {
-    providers = ["akashpreferredprovider"]
-    enforce = false
-  }
-}
+data "akash_deployments" "all" {}
 
-output "deployment_id" {
-  value = akash_deployment.my_deployment.id
+output "akash_deployments" {
+  value = data.akash_deployments.all
 }

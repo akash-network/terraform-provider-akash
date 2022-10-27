@@ -1,10 +1,20 @@
 TEST?=$$(go list ./... | grep -v 'vendor')
-HOSTNAME=joaoluna.com
 NAMESPACE=cloud
 NAME=akash
 BINARY=terraform-provider-${NAME}
-VERSION=0.0.4
+VERSION=0.0.5
 OS_ARCH=darwin_arm64
+OS := $(shell uname -s | tr A-Z a-z)
+HOSTNAME := $(shell hostname)
+UNAME := $(shell uname -m)
+
+ifeq ($(UNAME),x86_64)
+ARCH=amd64
+else ifeq ($(UNAME),i386)
+ARCH=386
+else ifeq ($(UNAME),arm64)
+ARCH=arm64
+endif
 
 default: install
 
@@ -27,8 +37,8 @@ release:
 	#GOOS=windows GOARCH=amd64 go build -o ./bin/${BINARY}_${VERSION}_windows_amd64
 
 install: build
-	mkdir -p ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
-	mv ${BINARY} ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
+	mkdir -p ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS}_${ARCH}
+	mv ${BINARY} ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS}_${ARCH}
 
 test: 
 	go test -i $(TEST) || exit 1

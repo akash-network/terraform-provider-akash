@@ -36,6 +36,10 @@ func (c AkashCommand) Deployment() AkashCommand {
 	return c.append("deployment")
 }
 
+func (c AkashCommand) Get() AkashCommand {
+	return c.append("get")
+}
+
 func (c AkashCommand) Create() AkashCommand {
 	return c.append("create")
 }
@@ -139,6 +143,10 @@ func (c AkashCommand) SetNode(node string) AkashCommand {
 
 func (c AkashCommand) SetKeyringBackend(keyringBackend string) AkashCommand {
 	return c.append("--keyring-backend").append(keyringBackend)
+}
+
+func (c AkashCommand) SetNote(note string) AkashCommand {
+	return c.append(fmt.Sprintf("--note=\"%s\"", note))
 }
 
 func (c AkashCommand) SetSignMode(mode string) AkashCommand {
