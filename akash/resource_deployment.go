@@ -136,6 +136,10 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 
 	bids, diagnostics := queryBids(ctx, akash, seqs)
 	if diagnostics != nil {
+		tflog.Warn(ctx, "No bids on deployment")
+		if err := akash.DeleteDeployment(seqs.Dseq, akash.Config.AccountAddress); err != nil {
+			return append(diagnostics, diag.FromErr(err)...)
+		}
 		return diagnostics
 	}
 
