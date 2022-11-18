@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.0.6] - 2022-11-16
 ### Added
 - Add support to mainnet-4
+### Fixed
+- Bug where deployments did not close when no bids were made
 
 ## [0.0.5] - 2022-10-27
 ### Added
