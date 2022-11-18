@@ -9,7 +9,7 @@ import (
 
 func (ak *AkashClient) SendManifest(dseq string, provider string, manifestLocation string) (string, error) {
 
-	cmd := cli.AkashCli(ak).Provider().SendManifest(manifestLocation).
+	cmd := cli.AkashCli(ak).SendManifest(manifestLocation).
 		SetDseq(dseq).SetProvider(provider).SetHome(ak.Config.Home).
 		SetKeyringBackend(ak.Config.KeyringBackend).SetFrom(ak.Config.KeyName).
 		SetNode(ak.Config.Node).OutputJson()
@@ -26,7 +26,7 @@ func (ak *AkashClient) SendManifest(dseq string, provider string, manifestLocati
 
 func (ak *AkashClient) GetLeaseStatus(seqs Seqs, provider string) (*types.LeaseStatus, error) {
 
-	cmd := cli.AkashCli(ak).Provider().LeaseStatus().
+	cmd := cli.AkashCli(ak).LeaseStatus().
 		SetHome(ak.Config.Home).SetDseq(seqs.Dseq).SetGseq(seqs.Gseq).SetOseq(seqs.Oseq).
 		SetNode(ak.Config.Node).SetProvider(provider).SetFrom(ak.Config.KeyName)
 

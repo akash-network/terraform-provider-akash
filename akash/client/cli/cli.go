@@ -19,7 +19,7 @@ type AkashCliClient interface {
 func AkashCli(client AkashCliClient) AkashCommand {
 	path := client.GetPath()
 	if path == "" {
-		path = "akash"
+		path = "provider-services"
 	}
 
 	return AkashCommand{
