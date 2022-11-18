@@ -70,7 +70,7 @@ func Provider() *schema.Provider {
 			Path: {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("AKASH_PATH", "akash"),
+				DefaultFunc: schema.EnvDefaultFunc("AKASH_PATH", "provider-services"),
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
@@ -121,7 +121,7 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 
 	akash := client.New(ctx, configuration)
 
-	akash.SetGlobalTransactionNote("Akash Terraform Provider - [provider=\"cloud-j-luna/akash\" version=\"0.0.5\"]")
+	akash.SetGlobalTransactionNote("Akash Terraform Provider")
 
 	return akash, diags
 }
