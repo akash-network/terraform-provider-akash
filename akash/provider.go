@@ -78,6 +78,7 @@ func Provider() *schema.Provider {
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"akash_deployments": dataSourceDeployments(),
+			"akash_providers":   dataSourceProviders(),
 		},
 		ConfigureContextFunc: providerConfigure,
 	}

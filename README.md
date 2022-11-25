@@ -95,19 +95,19 @@ cd examples && terraform init && terraform apply --auto-approve
 ### Close the Deployment
 
 ```shell
-akash tx deployment close --dseq 7878447 --owner $AKASH_ACCOUNT_ADDRESS --from $AKASH_KEY_NAME -y --gas=auto --gas-adjustment=1.15 --gas-prices=0.025uakt
+provider-services tx deployment close --dseq 8595343 --owner $AKASH_ACCOUNT_ADDRESS --from $AKASH_KEY_NAME -y --gas=auto --gas-adjustment=1.15 --gas-prices=0.025uakt
 ```
 
 ### Get deployment details
 
 ```shell
-akash provider lease-status --home ~/.akash --dseq 7339802 --provider akash1e5g55l6dqwdjewq4zenl6u93t2mmy2603pungd
+provider-services provider lease-status --home ~/.akash --dseq 7339802 --provider akash1e5g55l6dqwdjewq4zenl6u93t2mmy2603pungd
 ```
 
 ### Get logs
 
 ```shell
-akash provider lease-logs --dseq 7339802 --provider akash1e5g55l6dqwdjewq4zenl6u93t2mmy2603pungd --from "$AKASH_KEY_NAME"
+provider-services provider lease-logs --dseq 7339802 --provider akash1e5g55l6dqwdjewq4zenl6u93t2mmy2603pungd --from "$AKASH_KEY_NAME"
 ```
 
 ## Troubleshooting

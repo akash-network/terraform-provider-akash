@@ -2,7 +2,7 @@ TEST?=$$(go list ./... | grep -v 'vendor')
 NAMESPACE=cloud
 NAME=akash
 BINARY=terraform-provider-${NAME}
-VERSION=0.0.6
+VERSION=0.0.7
 OS_ARCH=darwin_arm64
 OS := $(shell uname -s | tr A-Z a-z)
 HOSTNAME := $(shell hostname)
@@ -48,7 +48,10 @@ testacc:
 	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout 120m
 
 clean:
-	rm -rf examples/.terraform examples/.terraform.lock.hcl examples/terraform.tfstate examples/terraform.tfstate.backup
+	find examples -type d -name ".terraform" -exec rm -rf \;
+	find examples -name ".terraform.lock.hcl" -delete
+	find examples -name "terraform.tfstate" -delete
+	find examples -name "terraform.tfstate.backup" -delete
 
 develop:
 	make clean
