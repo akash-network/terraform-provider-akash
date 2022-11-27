@@ -8,6 +8,10 @@ For the provider to work properly you'll need:
 - Terraform
 - Go 1.18
 - Akash v0.16.3
+- (mac users) realpath, which can be installed using:
+```shell
+brew install coreutils
+```
 
 ## Installation
 
@@ -66,8 +70,7 @@ export AKASH_NET="https://raw.githubusercontent.com/ovrclk/net/master/mainnet"
 export AKASH_VERSION="$(curl -s "$AKASH_NET/version.txt")"
 export AKASH_CHAIN_ID="$(curl -s "$AKASH_NET/chain-id.txt")"
 export AKASH_NODE="https://akash-rpc.polkachu.com:443"
-export AKASH_HOME="$(which ~/.akash)"
-
+export AKASH_HOME="$(realpath ~/.akash)"
 export TF_LOG_PROVIDER=DEBUG
 ```
 
@@ -95,19 +98,19 @@ cd examples && terraform init && terraform apply --auto-approve
 ### Close the Deployment
 
 ```shell
-akash tx deployment close --dseq 7878447 --owner $AKASH_ACCOUNT_ADDRESS --from $AKASH_KEY_NAME -y --gas=auto --gas-adjustment=1.15 --gas-prices=0.025uakt
+provider-services tx deployment close --dseq 7878447 --owner $AKASH_ACCOUNT_ADDRESS --from $AKASH_KEY_NAME -y --gas=auto --gas-adjustment=1.15 --gas-prices=0.025uakt
 ```
 
 ### Get deployment details
 
 ```shell
-akash provider lease-status --home ~/.akash --dseq 7339802 --provider akash1e5g55l6dqwdjewq4zenl6u93t2mmy2603pungd
+provider-services provider lease-status --home ~/.akash --dseq 7339802 --provider akash1e5g55l6dqwdjewq4zenl6u93t2mmy2603pungd
 ```
 
 ### Get logs
 
 ```shell
-akash provider lease-logs --dseq 7339802 --provider akash1e5g55l6dqwdjewq4zenl6u93t2mmy2603pungd --from "$AKASH_KEY_NAME"
+provider-services provider lease-logs --dseq 7339802 --provider akash1e5g55l6dqwdjewq4zenl6u93t2mmy2603pungd --from "$AKASH_KEY_NAME"
 ```
 
 ## Troubleshooting
