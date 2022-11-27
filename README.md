@@ -61,12 +61,12 @@ You can find example configurations for creating a deployment inside the `exampl
 ```shell
 export AKASH_KEY_NAME=terraform
 export AKASH_KEYRING_BACKEND=os
-export AKASH_ACCOUNT_ADDRESS="$(./bin/akash keys show $AKASH_KEY_NAME -a)"
+export AKASH_ACCOUNT_ADDRESS="$(provider-services keys show $AKASH_KEY_NAME -a)"
 export AKASH_NET="https://raw.githubusercontent.com/ovrclk/net/master/mainnet"
 export AKASH_VERSION="$(curl -s "$AKASH_NET/version.txt")"
 export AKASH_CHAIN_ID="$(curl -s "$AKASH_NET/chain-id.txt")"
 export AKASH_NODE="https://akash-rpc.polkachu.com:443"
-export AKASH_HOME="$(realpath ~/.akash)"
+export AKASH_HOME="$(which ~/.akash)"
 
 export TF_LOG_PROVIDER=DEBUG
 ```

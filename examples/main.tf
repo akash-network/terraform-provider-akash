@@ -12,6 +12,7 @@ terraform {
 }
 
 provider "akash" {
+  # Also remember these values can be provided as env variables.
   account_address = "<address>"
   keyring_backend = "os"
   key_name = "terraform"

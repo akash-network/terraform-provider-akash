@@ -68,3 +68,4 @@ examples/deployment.yaml
 examples/\~
 .idea
 .bin
+/.idea/
