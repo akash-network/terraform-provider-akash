@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"terraform-provider-akash/akash/client/praetor"
 	"terraform-provider-akash/akash/client/types"
+	"terraform-provider-akash/akash/extensions"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -47,9 +48,14 @@ func dataSourceProviders() *schema.Resource {
 						"attributes": &schema.Schema{
 							Type:     schema.TypeMap,
 							Computed: true,
+							Optional: true,
 						},
 					},
 				},
+			},
+			"required_attributes": &schema.Schema{
+				Type:     schema.TypeMap,
+				Optional: true,
 			},
 		},
 	}
@@ -67,6 +73,19 @@ func dataSourceProvidersRead(ctx context.Context, d *schema.ResourceData, m inte
 		tflog.Info(ctx, "Active providers requested")
 		providers = praetor.GetActiveProviders()
 	}
+
+	if attributes, ok := d.GetOk("required_attributes"); ok {
+		attrs := attributes.(map[string]interface{})
+		if safeAttributes, err := extensions.SafeCastMapValues[string, string](attrs); err == nil {
+			providers = getProvidersWithAttributes(providers, safeAttributes)
+		} else {
+			tflog.Error(ctx, fmt.Sprintf("Could not cast required_attributes: %s", err))
+			return diag.FromErr(err)
+		}
+	} else {
+		tflog.Info(ctx, "No required_attributes provided")
+	}
+
 	tflog.Info(ctx, fmt.Sprintf("Got %d providers", len(providers)))
 	akashProviders := make([]map[string]interface{}, 0, len(providers))
 	for _, p := range providers {
@@ -89,4 +108,16 @@ func dataSourceProvidersRead(ctx context.Context, d *schema.ResourceData, m inte
 	d.SetId(strconv.FormatInt(time.Now().Unix(), 10))
 
 	return diags
+}
+
+func getProvidersWithAttributes(providers []types.Provider, requiredAttributes map[string]string) []types.Provider {
+	newProviders := make([]types.Provider, 0, len(providers))
+
+	for _, p := range providers {
+		if extensions.IsSubset(p.Attributes, requiredAttributes) {
+			newProviders = append(newProviders, p)
+		}
+	}
+
+	return newProviders
 }

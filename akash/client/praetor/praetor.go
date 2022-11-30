@@ -2,7 +2,6 @@ package praetor
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"terraform-provider-akash/akash/client/types"
@@ -92,14 +91,5 @@ func unwrapAttributes(attributes []Attribute) map[string]string {
 	for _, attr := range attributes {
 		out[attr.Key] = attr.Value
 	}
-
 	return out
-}
-
-func main() {
-	providers := GetAllProviders()
-
-	for _, p := range providers {
-		fmt.Println(p.Address)
-	}
 }

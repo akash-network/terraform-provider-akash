@@ -93,23 +93,29 @@ func resourceDeployment() *schema.Resource {
 					},
 				},
 			},
-
 			"services": &schema.Schema{
 				Type:     schema.TypeList,
-				Computed: true,
+				Optional: true,
+				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"service_name": &schema.Schema{
+						"name": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"service_uri": &schema.Schema{
-							Type:     schema.TypeString,
+						"uris": {
+							Type:     schema.TypeList,
 							Computed: true,
+							Elem:     &schema.Schema{Type: schema.TypeString},
 						},
+						"available":          {Type: schema.TypeInt, Computed: true},
+						"total":              {Type: schema.TypeInt, Computed: true},
+						"replicas":           {Type: schema.TypeInt, Computed: true},
+						"updated_replicas":   {Type: schema.TypeInt, Computed: true},
+						"available_replicas": {Type: schema.TypeInt, Computed: true},
+						"ready_replicas":     {Type: schema.TypeInt, Computed: true},
 					},
-				},
-			},
+				}},
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -345,13 +351,20 @@ func resourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m inter
 	return diags
 }
 
-func extractServicesFromLeaseStatus(leaseStatus types.LeaseStatus) []interface{} {
-	var services []interface{}
+func extractServicesFromLeaseStatus(leaseStatus types.LeaseStatus) []map[string]interface{} {
+	// TODO: Force ordering of services to provide some predictability to the position of the services
+	services := make([]map[string]interface{}, 0)
 
 	for key, value := range leaseStatus.Services {
 		service := make(map[string]interface{})
-		service["service_name"] = key
-		service["service_uri"] = strings.Join(value.URIs, " | ")
+		service["name"] = key
+		service["uris"] = value.URIs
+		service["replicas"] = value.Replicas
+		service["updated_replicas"] = value.UpdatedReplicas
+		service["available_replicas"] = value.AvailableReplicas
+		service["ready_replicas"] = value.ReadyReplicas
+		service["available"] = value.Available
+		service["total"] = value.Total
 
 		services = append(services, service)
 	}
