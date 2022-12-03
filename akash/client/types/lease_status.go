@@ -1,7 +1,18 @@
 package types
 
+import "net"
+
 type LeaseStatus struct {
-	Services map[string]Service
+	Services       map[string]Service `json:"services"`
+	ForwardedPorts []ForwardedPort    `json:"forwarded_ports"`
+	IPs            map[string]IP      `json:"ips"`
+}
+
+type IP struct {
+	Address net.IP `json:"address"`
+}
+
+type ForwardedPort struct {
 }
 
 type Service struct {

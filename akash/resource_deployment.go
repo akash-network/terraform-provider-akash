@@ -115,7 +115,26 @@ func resourceDeployment() *schema.Resource {
 						"available_replicas": {Type: schema.TypeInt, Computed: true},
 						"ready_replicas":     {Type: schema.TypeInt, Computed: true},
 					},
-				}},
+				},
+			},
+			"ips": &schema.Schema{
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"address": {Type: schema.TypeString, Computed: true},
+					},
+				},
+			},
+			"forwarded_ports": &schema.Schema{
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{},
+				},
+			},
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
