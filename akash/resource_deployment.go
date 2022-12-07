@@ -95,8 +95,7 @@ func resourceDeployment() *schema.Resource {
 			},
 			"services": &schema.Schema{
 				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
@@ -114,23 +113,24 @@ func resourceDeployment() *schema.Resource {
 						"updated_replicas":   {Type: schema.TypeInt, Computed: true},
 						"available_replicas": {Type: schema.TypeInt, Computed: true},
 						"ready_replicas":     {Type: schema.TypeInt, Computed: true},
-					},
-				},
-			},
-			"ips": &schema.Schema{
-				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"address": {Type: schema.TypeString, Computed: true},
+						"ips": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"port":          {Type: schema.TypeInt, Computed: true},
+									"ip":            {Type: schema.TypeString, Computed: true},
+									"external_port": {Type: schema.TypeInt, Computed: true},
+									"protocol":      {Type: schema.TypeString, Computed: true},
+								},
+							},
+						},
 					},
 				},
 			},
 			"forwarded_ports": &schema.Schema{
 				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{},
 				},
@@ -362,6 +362,9 @@ func resourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m inter
 	}
 
 	services := extractServicesFromLeaseStatus(*leaseStatus)
+
+	tflog.Info(ctx, fmt.Sprintf("Extracted %d services from lease-status", len(services)))
+	tflog.Debug(ctx, fmt.Sprintf("Services: %+v", services))
 
 	if err := d.Set("services", services); err != nil {
 		return diag.FromErr(err)
