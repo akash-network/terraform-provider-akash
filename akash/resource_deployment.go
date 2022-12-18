@@ -125,14 +125,19 @@ func resourceDeployment() *schema.Resource {
 								},
 							},
 						},
+						"forwarded_ports": &schema.Schema{
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"host":          {Type: schema.TypeString, Computed: true},
+									"port":          {Type: schema.TypeInt, Computed: true},
+									"external_port": {Type: schema.TypeInt, Computed: true},
+									"proto":         {Type: schema.TypeString, Computed: true},
+								},
+							},
+						},
 					},
-				},
-			},
-			"forwarded_ports": &schema.Schema{
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{},
 				},
 			},
 		},
@@ -387,6 +392,30 @@ func extractServicesFromLeaseStatus(leaseStatus types.LeaseStatus) []map[string]
 		service["ready_replicas"] = value.ReadyReplicas
 		service["available"] = value.Available
 		service["total"] = value.Total
+
+		// Populate IPs
+		serviceIPs := make([]map[string]interface{}, 0, len(leaseStatus.IPs[key]))
+		for _, value := range leaseStatus.IPs[key] {
+			ip := make(map[string]interface{})
+			ip["port"] = value.Port
+			ip["ip"] = value.IP
+			ip["external_port"] = value.ExternalPort
+			ip["proto"] = value.Protocol
+			serviceIPs = append(serviceIPs, ip)
+		}
+		service["ips"] = serviceIPs
+
+		// Populate forwarded ports
+		serviceForwardedPorts := make([]map[string]interface{}, 0, len(leaseStatus.ForwardedPorts[key]))
+		for _, value := range leaseStatus.ForwardedPorts[key] {
+			forwardedPort := make(map[string]interface{})
+			forwardedPort["port"] = value.Port
+			forwardedPort["host"] = value.Host
+			forwardedPort["external_port"] = value.ExternalPort
+			forwardedPort["proto"] = value.Proto
+			serviceForwardedPorts = append(serviceForwardedPorts, forwardedPort)
+		}
+		service["forwarded_ports"] = serviceForwardedPorts
 
 		services = append(services, service)
 	}

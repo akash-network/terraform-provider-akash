@@ -44,18 +44,22 @@ services: [
     "replicas": 1,
     "total": 1,
     "updated_replicas": 1,
-    "uris": []
-  },
-  {
-    "available": 1,
-    "available_replicas": 1,
-    "name": "wordpress",
-    "ready_replicas": 1,
-    "replicas": 1,
-    "total": 1,
-    "updated_replicas": 1,
-    "uris": [
-      "example0app.akash.network"
+    "uris": ["url1", "url2"],
+    "ips": [
+      {
+        "ip": "xxx.xxx.xxx.xxx",
+        "port": 1234,
+        "proto": "TCP",
+        "external_port": 12345
+      }
+    ],
+    "forwarded_ports": [
+      {
+        "host": "hosturl",
+        "port": 1234,
+        "proto": "TCP",
+        "external_port": 12345
+      }
     ]
   }
 ]

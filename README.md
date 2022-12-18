@@ -110,6 +110,12 @@ provider-services provider lease-status --home ~/.akash --dseq 7339802 --provide
 provider-services provider lease-logs --dseq 7339802 --provider akash1e5g55l6dqwdjewq4zenl6u93t2mmy2603pungd --from "$AKASH_KEY_NAME"
 ```
 
+### Shell Access
+
+```shell
+provider-services lease-shell --dseq 8929479 --provider akash1mn3fx53ngzptq7l4h4f0mqa0yj6fd8pd0s2xgm --from "$AKASH_KEY_NAME" --tty --replica-index=0
+```
+
 ## Troubleshooting
 
 ### `Error: error unmarshalling: invalid character '<' looking for beginning of value`

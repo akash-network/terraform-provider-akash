@@ -10,7 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - `akash_deployment` output `services` now has a new structure and more information regarding replicas
 ### Development
-- Integration with Praetor's API
+- Integration with Praetor's API through custom caching service
+- Start using Akash's type definitions
 
 ## [0.0.6] - 2022-11-16
 ### Added
