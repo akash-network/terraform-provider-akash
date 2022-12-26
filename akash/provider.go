@@ -19,6 +19,7 @@ const ChainId = "chain_id"
 const Node = "node"
 const Home = "home"
 const Path = "path"
+const ProvidersApi = "providers_api"
 
 // Provider -
 func Provider() *schema.Provider {
@@ -72,6 +73,11 @@ func Provider() *schema.Provider {
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("AKASH_PATH", "provider-services"),
 			},
+			ProvidersApi: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("PROVIDERS_API", "http://providers-api.quasarch.cloud/provider/"),
+			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"akash_deployment": resourceDeployment(),
@@ -97,6 +103,7 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 		Node:           d.Get(Node).(string),
 		Home:           d.Get(Home).(string),
 		Path:           d.Get(Path).(string),
+		ProvidersApi:   d.Get(ProvidersApi).(string),
 	}
 
 	// Warning or errors can be collected in a slice type
@@ -106,7 +113,7 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 		return nil, diags
 	}
 
-	configuration := client.AkashConfiguration{
+	configuration := client.AkashProviderConfiguration{
 		KeyName:        config[KeyName],
 		KeyringBackend: config[KeyringBackend],
 		AccountAddress: config[AccountAddress],
@@ -116,6 +123,7 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 		Node:           config[Node],
 		Home:           config[Home],
 		Path:           config[Path],
+		ProvidersApi:   config[ProvidersApi],
 	}
 
 	tflog.Debug(ctx, fmt.Sprintf("Starting provider with %+v", configuration))

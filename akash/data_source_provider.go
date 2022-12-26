@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"strconv"
-	"terraform-provider-akash/akash/client/praetor"
+	"terraform-provider-akash/akash/client"
+	"terraform-provider-akash/akash/client/providers-api"
 	"terraform-provider-akash/akash/client/types"
 	"terraform-provider-akash/akash/extensions"
 	"time"
@@ -64,14 +65,17 @@ func dataSourceProviders() *schema.Resource {
 func dataSourceProvidersRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
+	akash := m.(*client.AkashClient)
+
+	providersClient := providers_api.New(akash.Config.ProvidersApi)
 
 	var providers []types.Provider
 	if d.Get("all_providers").(bool) {
 		tflog.Info(ctx, "All providers requested")
-		providers = praetor.GetAllProviders()
+		providers = providersClient.GetAllProviders()
 	} else {
 		tflog.Info(ctx, "Active providers requested")
-		providers = praetor.GetActiveProviders()
+		providers = providersClient.GetActiveProviders()
 	}
 
 	if attributes, ok := d.GetOk("required_attributes"); ok {
