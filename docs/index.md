@@ -15,6 +15,7 @@ provider "akash" {
   chain_version = "string"
   home = "string (Default: ~/.akash)"
   path = "string (Default: akash)"
+  providers_api = "string (Default: http://providers-api.quasarch.cloud/provider/)"
 }
 ```
 

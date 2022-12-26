@@ -6,11 +6,11 @@ import (
 
 type AkashClient struct {
 	ctx             context.Context
-	Config          AkashConfiguration
+	Config          AkashProviderConfiguration
 	transactionNote string
 }
 
-type AkashConfiguration struct {
+type AkashProviderConfiguration struct {
 	KeyName        string
 	KeyringBackend string
 	AccountAddress string
@@ -20,6 +20,7 @@ type AkashConfiguration struct {
 	Node           string
 	Home           string
 	Path           string
+	ProvidersApi   string
 }
 
 func (ak *AkashClient) GetContext() context.Context {
@@ -34,6 +35,6 @@ func (ak *AkashClient) SetGlobalTransactionNote(note string) {
 	ak.transactionNote = note
 }
 
-func New(ctx context.Context, configuration AkashConfiguration) *AkashClient {
+func New(ctx context.Context, configuration AkashProviderConfiguration) *AkashClient {
 	return &AkashClient{ctx: ctx, Config: configuration}
 }

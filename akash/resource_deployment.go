@@ -93,19 +93,49 @@ func resourceDeployment() *schema.Resource {
 					},
 				},
 			},
-
 			"services": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"service_name": &schema.Schema{
+						"name": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"service_uri": &schema.Schema{
-							Type:     schema.TypeString,
+						"uris": {
+							Type:     schema.TypeList,
 							Computed: true,
+							Elem:     &schema.Schema{Type: schema.TypeString},
+						},
+						"available":          {Type: schema.TypeInt, Computed: true},
+						"total":              {Type: schema.TypeInt, Computed: true},
+						"replicas":           {Type: schema.TypeInt, Computed: true},
+						"updated_replicas":   {Type: schema.TypeInt, Computed: true},
+						"available_replicas": {Type: schema.TypeInt, Computed: true},
+						"ready_replicas":     {Type: schema.TypeInt, Computed: true},
+						"ips": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"port":          {Type: schema.TypeInt, Computed: true},
+									"ip":            {Type: schema.TypeString, Computed: true},
+									"external_port": {Type: schema.TypeInt, Computed: true},
+									"protocol":      {Type: schema.TypeString, Computed: true},
+								},
+							},
+						},
+						"forwarded_ports": &schema.Schema{
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"host":          {Type: schema.TypeString, Computed: true},
+									"port":          {Type: schema.TypeInt, Computed: true},
+									"external_port": {Type: schema.TypeInt, Computed: true},
+									"proto":         {Type: schema.TypeString, Computed: true},
+								},
+							},
 						},
 					},
 				},
@@ -338,6 +368,9 @@ func resourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m inter
 
 	services := extractServicesFromLeaseStatus(*leaseStatus)
 
+	tflog.Info(ctx, fmt.Sprintf("Extracted %d services from lease-status", len(services)))
+	tflog.Debug(ctx, fmt.Sprintf("Services: %+v", services))
+
 	if err := d.Set("services", services); err != nil {
 		return diag.FromErr(err)
 	}
@@ -345,13 +378,44 @@ func resourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m inter
 	return diags
 }
 
-func extractServicesFromLeaseStatus(leaseStatus types.LeaseStatus) []interface{} {
-	var services []interface{}
+func extractServicesFromLeaseStatus(leaseStatus types.LeaseStatus) []map[string]interface{} {
+	// TODO: Force ordering of services to provide some predictability to the position of the services
+	services := make([]map[string]interface{}, 0)
 
 	for key, value := range leaseStatus.Services {
 		service := make(map[string]interface{})
-		service["service_name"] = key
-		service["service_uri"] = strings.Join(value.URIs, " | ")
+		service["name"] = key
+		service["uris"] = value.URIs
+		service["replicas"] = value.Replicas
+		service["updated_replicas"] = value.UpdatedReplicas
+		service["available_replicas"] = value.AvailableReplicas
+		service["ready_replicas"] = value.ReadyReplicas
+		service["available"] = value.Available
+		service["total"] = value.Total
+
+		// Populate IPs
+		serviceIPs := make([]map[string]interface{}, 0, len(leaseStatus.IPs[key]))
+		for _, value := range leaseStatus.IPs[key] {
+			ip := make(map[string]interface{})
+			ip["port"] = value.Port
+			ip["ip"] = value.IP
+			ip["external_port"] = value.ExternalPort
+			ip["proto"] = value.Protocol
+			serviceIPs = append(serviceIPs, ip)
+		}
+		service["ips"] = serviceIPs
+
+		// Populate forwarded ports
+		serviceForwardedPorts := make([]map[string]interface{}, 0, len(leaseStatus.ForwardedPorts[key]))
+		for _, value := range leaseStatus.ForwardedPorts[key] {
+			forwardedPort := make(map[string]interface{})
+			forwardedPort["port"] = value.Port
+			forwardedPort["host"] = value.Host
+			forwardedPort["external_port"] = value.ExternalPort
+			forwardedPort["proto"] = value.Proto
+			serviceForwardedPorts = append(serviceForwardedPorts, forwardedPort)
+		}
+		service["forwarded_ports"] = serviceForwardedPorts
 
 		services = append(services, service)
 	}
