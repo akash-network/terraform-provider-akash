@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Development
 - Integration with Praetor's API through custom caching service
 - Start using Akash's type definitions
+- Tracing enabled on deployment creation
 
 ## [0.0.6] - 2022-11-16
 ### Added

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"runtime/trace"
 	"strings"
 	"terraform-provider-akash/akash/client"
 	"terraform-provider-akash/akash/client/types"
@@ -152,18 +153,25 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 
 	var diags diag.Diagnostics
 
-	manifestLocation, err := CreateTemporaryDeploymentFile(ctx, d.Get("sdl").(string))
+	pctx, task := trace.NewTask(ctx, "Create")
+	defer task.End()
 
+	reg := trace.StartRegion(pctx, "CreateTemporaryDeploymentFile")
+	manifestLocation, err := CreateTemporaryDeploymentFile(ctx, d.Get("sdl").(string))
 	if err != nil {
 		diags = append(diags)
 		return diag.FromErr(err)
 	}
+	reg.End()
 
+	reg = trace.StartRegion(pctx, "CreateDeployment")
 	seqs, err := akash.CreateDeployment(manifestLocation)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	reg.End()
 
+	reg = trace.StartRegion(pctx, "queryBids")
 	bids, diagnostics := queryBids(ctx, akash, seqs)
 	if diagnostics != nil {
 		tflog.Warn(ctx, "No bids on deployment")
@@ -172,7 +180,9 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 		}
 		return diagnostics
 	}
+	reg.End()
 
+	reg = trace.StartRegion(pctx, "selectProvider")
 	provider, err := selectProvider(ctx, d, bids)
 	if err != nil {
 		if err := akash.DeleteDeployment(seqs.Dseq, akash.Config.AccountAddress); err != nil {
@@ -181,7 +191,9 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 
 		return diag.FromErr(err)
 	}
+	reg.End()
 
+	reg = trace.StartRegion(pctx, "createLease")
 	if diagnostics := createLease(ctx, akash, seqs, provider); diagnostics != nil {
 		tflog.Warn(ctx, "Could not create lease, deleting deployment")
 		err := akash.DeleteDeployment(seqs.Dseq, akash.Config.AccountAddress)
@@ -191,7 +203,9 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 		}
 		return diagnostics
 	}
+	reg.End()
 
+	reg = trace.StartRegion(pctx, "sendManifest")
 	if diagnostics := sendManifest(ctx, akash, seqs, provider, manifestLocation); diagnostics != nil {
 		tflog.Warn(ctx, "Could not send manifest, deleting deployment")
 		err := akash.DeleteDeployment(seqs.Dseq, akash.Config.AccountAddress)
@@ -200,6 +214,9 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 		}
 		return diagnostics
 	}
+	reg.End()
+
+	reg = trace.StartRegion(pctx, "setCreatedState")
 	tflog.Info(ctx, "Setting created state")
 	if diagnostics := setCreatedState(d, akash.Config.AccountAddress, seqs, provider); diagnostics != nil {
 		tflog.Warn(ctx, "Could not set state to created, deleting deployment")
@@ -209,6 +226,7 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 		}
 		return diagnostics
 	}
+	reg.End()
 
 	d.SetId(seqs.Dseq + IdSeparator + seqs.Gseq + IdSeparator + seqs.Oseq + IdSeparator + akash.Config.AccountAddress + IdSeparator + provider)
 

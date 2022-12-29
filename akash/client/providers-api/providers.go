@@ -2,7 +2,8 @@ package providers_api
 
 import (
 	"encoding/json"
-	"log"
+	"errors"
+	"fmt"
 	"net/http"
 	"terraform-provider-akash/akash/client/types"
 )
@@ -29,25 +30,25 @@ func New(host string) *ProvidersClient {
 	}
 }
 
-func (c *ProvidersClient) GetAllProviders() []types.Provider {
+func (c *ProvidersClient) GetAllProviders() ([]types.Provider, error) {
 	req, err := http.NewRequest(http.MethodGet, c.host, nil)
 	if err != nil {
-		log.Fatalf("error: %s", err)
+		return nil, err
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		log.Fatalf("error: %s", err)
+		return nil, err
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		log.Fatalf("error: %s", resp.Status)
+		return nil, errors.New(fmt.Sprintf("Response status code %d", resp.StatusCode))
 	}
 
 	var result []Provider
 	dec := json.NewDecoder(resp.Body)
 	if err := dec.Decode(&result); err != nil {
-		log.Fatalf("error: can't decode - %s", err)
+		return nil, err
 	}
 
 	providers := make([]types.Provider, 0, len(result))
@@ -63,11 +64,14 @@ func (c *ProvidersClient) GetAllProviders() []types.Provider {
 		})
 	}
 
-	return providers
+	return providers, err
 }
 
-func (c *ProvidersClient) GetActiveProviders() []types.Provider {
-	providers := c.GetAllProviders()
+func (c *ProvidersClient) GetActiveProviders() ([]types.Provider, error) {
+	providers, err := c.GetAllProviders()
+	if err != nil {
+		return nil, err
+	}
 	activeProviders := make([]types.Provider, 0, len(providers))
 
 	for _, p := range providers {
@@ -76,5 +80,5 @@ func (c *ProvidersClient) GetActiveProviders() []types.Provider {
 		}
 	}
 
-	return activeProviders
+	return activeProviders, nil
 }

@@ -1,0 +1,766 @@
+[
+  {
+    "address": "akash1uz6fslqf28fdhjtqa503sy7rp37vpw0xfnhgk8",
+    "uptime": {
+      "percentage": 99.95,
+      "since": "PT168H"
+    },
+    "active": true,
+    "extraAttributes": {
+      "host": "akash",
+      "tier": "community",
+      "organization": "Praetor App",
+      "region": "ca-central",
+      "cpu": "Intel",
+      "arch": "amd64",
+      "managed-by": "Praetor"
+    }
+  },
+  {
+    "address": "akash1u5cdg7k3gl43mukca4aeultuz8x2j68mgwn28e",
+    "uptime": {
+      "percentage": 88.0,
+      "since": "PT168H"
+    },
+    "active": true,
+    "extraAttributes": {
+      "organization": "d3akash.cloud",
+      "region": "eu-ch",
+      "host": "akash",
+      "tier": "community",
+      "cpu": "amd64",
+      "network": "business xdsl 500/100",
+      "status": "https://status.d3akash.cloud/",
+      "power": "solar",
+      "capabilities/storage/1/class": "default",
+      "capabilities/storage/1/persistent": "true",
+      "capabilities/storage/2/class": "beta2",
+      "capabilities/storage/2/persistent": "true",
+      "Email": "info@d3akash.cloud",
+      "Website": "https://www.d3akash.cloud",
+      "arch": "amd64"
+    }
+  },
+  {
+    "address": "akash1lmaulqyvlj0wwcjm5dgqn5wv5j957g672g20ht",
+    "uptime": {
+      "percentage": 100.0,
+      "since": "PT168H"
+    },
+    "active": true,
+    "extraAttributes": {
+      "host": "DeraTech",
+      "organization": "DeraTech"
+    }
+  },
+  {
+    "address": "akash1vyt3aj4wshwpdzz45rwmueq9xpyyfxxv23ge7q",
+    "uptime": {
+      "percentage": 99.6,
+      "since": "PT168H"
+    },
+    "active": true,
+    "extraAttributes": {
+      "host": "Kultura s1"
+    }
+  },
+  {
+    "address": "akash1ra00m26cdy42j0988q2szpyqrrg7xfqrktqult",
+    "uptime": {
+      "percentage": 99.25,
+      "since": "PT168H"
+    },
+    "active": true,
+    "extraAttributes": {
+      "organization": "ThanosNode",
+      "region": "us-east",
+      "chia-plotting": "false",
+      "host": "akash",
+      "cpu": "intel",
+      "tier": "community",
+      "network_download": "1000",
+      "network_upload": "1000",
+      "status": "https://status.thanosnode.com",
+      "capabilities/storage/1/class": "default",
+      "capabilities/storage/1/persistent": "true",
+      "capabilities/storage/2/class": "beta1",
+      "capabilities/storage/2/persistent": "true",
+      "arch": "amd64"
+    }
+  },
+  {
+    "address": "akash10npsyhvkv54rg3p57rsafafc9sdjz7nqlzs2f4",
+    "uptime": {
+      "percentage": 100.0,
+      "since": "PT168H"
+    },
+    "active": true,
+    "extraAttributes": {
+      "organization": "ODB Nodes",
+      "Region": "USA",
+      "arch": "amd64"
+    }
+  },
+  {
+    "address": "akash1yh6y4hdqql88e8g7la30zlunntan2n7gxae7ma",
+    "uptime": {
+      "percentage": 99.95,
+      "since": "PT168H"
+    },
+    "active": true,
+    "extraAttributes": {
+      "organization": "ALTER",
+      "arch": "amd64"
+    }
+  },
+  {
+    "address": "akash1zwzf72lcmaywvwnszzqfaygw6ax3vn3h3kheap",
+    "uptime": {
+      "percentage": 29.549999999999997,
+      "since": "PT168H"
+    },
+    "active": true,
+    "extraAttributes": {
+      "organization": "Starship Axiom",
+      "arch": "amd64",
+      "cpu": "intel",
+      "region": "ca-south",
+      "tier": "community",
+      "host": "akash"
+    }
+  },
+  {
+    "address": "akash1l2mzh4xfrh4hdms4krd73fkvhqpwegp25xnu43",
+    "uptime": {
+      "percentage": 100.0,
+      "since": "PT168H"
+    },
+    "active": true,
+    "extraAttributes": {
+      "region": "europe-north1",
+      "host": "akash",
+      "tier": "community",
+      "organization": "Nodeasy.com"
+    }
+  },
+  {
+    "address": "akash1lwzjtsqkuytusa98py77cflhqxl3z7v7ur5632",
+    "uptime": {
+      "percentage": 100.0,
+      "since": "PT168H"
+    },
+    "active": true,
+    "extraAttributes": {
+      "organization": "moonbys",
+      "region": "europe",
+      "host": "moonbys",
+      "tier": "community",
+      "arch": "amd64"
+    }
+  },
+  {
+    "address": "akash1p5vh8dsck7mnvc5zha6u3aes0fya3lq4ec9dpy",
+    "uptime": {
+      "percentage": 100.0,
+      "since": "PT168H"
+    },
+    "active": true,
+    "extraAttributes": {
+      "organization": "Blockless",
+      "host": "blockless",
+      "arch": "amd64"
+    }
+  },
+  {
+    "address": "akash142fuwhzyv5yhj60y6uqj3swrw7jx584jpr9ttu",
+    "uptime": {
+      "percentage": 99.25,
+      "since": "PT168H"
+    },
+    "active": true,
+    "extraAttributes": {
+      "region": "uk-eng",
+      "host": "akash",
+      "tier": "community",
+      "organization": "Parallax Cloud Services & Datacentres [A02242]",
+      "capabilities/storage/1/class": "default",
+      "capabilities/storage/1/persistent": "true",
+      "capabilities/storage/2/class": "beta2",
+      "capabilities/storage/2/persistent": "true"
+    }
+  },
+  {
+    "address": "akash13hq773zw3tfljlfq4hvdr6d2sh6f75jj0ed0he",
+    "uptime": {
+      "percentage": 100.0,
+      "since": "PT168H"
+    },
+    "active": true,
+    "extraAttributes": {
+      "organization": "AWSenPLS",
+      "arch": "amd64"
+    }
+  },
+  {
+    "address": "akash1kg3zs3vg94cpapf4c660ha5p29srz3yu9xsjcx",
+    "uptime": {
+      "percentage": 100.0,
+      "since": "PT168H"
+    },
+    "active": true,
+    "extraAttributes": {
+      "organization": "Moonbys",
+      "host": "moonbys",
+      "tier": "Colony - (Private)",
+      "email": "support@moonbys.com",
+      "region": "United Kingdom",
+      "website": "https://moonbys.com",
+      "arch": "amd64"
+    }
+  },
+  {
+    "address": "akash1ygk5v5sg7redsn0t9qwmsk3pkhdt0w3lk0dfg3",
+    "uptime": {
+      "percentage": 99.9,
+      "since": "PT168H"
+    },
+    "active": true,
+    "extraAttributes": {
+      "Organization": "The Stable Europe",
+      "CPU": "Intel Corei9",
+      "region": "europe",
+      "Energy": "Solar & Wind",
+      "Upload": "70 Mbps",
+      "Download": "70 Mbps"
+    }
+  },
+  {
+    "address": "akash10cvpyz2arrhvgsekrqas2qm3cwlzvqutchsja0",
+    "uptime": {
+      "percentage": 99.9,
+      "since": "PT168H"
+    },
+    "active": true,
+    "extraAttributes": {
+      "organization": "Agile Tech Solutions",
+      "arch": "intel",
+      "host": "akash",
+      "tier": "community",
+      "region": "uk-eng",
+      "chia-plotting": "true"
+    }
+  },
+  {
+    "address": "akash1m7evvu68xnkccedx9p07ksvmrernvr3qef3f8t",
+    "uptime": {
+      "percentage": 99.95,
+      "since": "PT168H"
+    },
+    "active": true,
+    "extraAttributes": {
+      "organization": "Tastypeppers.net",
+      "arch": "amd64",
+      "network_upload": "1000Mbps",
+      "network_download": "1000Mbps",
+      "status": "https://status.tastypeppers.net"
+    }
+  },
+  {
+    "address": "akash1tweev0k42guyv3a2jtgphmgfrl2h5y2884vh9d",
+    "uptime": {
+      "percentage": 99.9,
+      "since": "PT168H"
+    },
+    "active": true,
+    "extraAttributes": {
+      "organization": "DCNorse",
+      "arch": "amd64",
+      "Network": "Fiber 1000 / 1000",
+      "Storage": "NVME"
+    }
+  },
+  {
+    "address": "akash17l0f3kf7gv4kmgqjmgc0ksj3em6lqgcc4kl4dg",
+    "uptime": {
+      "percentage": 100.0,
+      "since": "PT168H"
+    },
+    "active": true,
+    "extraAttributes": {
+      "organization": "pcgameservers.com",
+      "cpu": "Intel",
+      "Region": "ca-east",
+      "tier": "community",
+      "host": "akash",
+      "arch": "amd64"
+    }
+  },
+  {
+    "address": "akash1vj3ldfwa7m0kx8s9sfg9qqxteq9q0aalzwajmq",
+    "uptime": {
+      "percentage": 99.95,
+      "since": "PT168H"
+    },
+    "active": true,
+    "extraAttributes": {
+      "organization": "Akashinator",
+      "arch": "amd64",
+      "network_download": "1000",
+      "network_upload": "1000",
+      "region": "us-east",
+      "energy": "solar"
+    }
+  },
+  {
+    "address": "akash187srpr6h5m7yj4d55rxxyegf7dytswcajk3lew",
+    "uptime": {
+      "percentage": 100.0,
+      "since": "PT168H"
+    },
+    "active": true,
+    "extraAttributes": {
+      "region": "europe",
+      "arch": "Intel Xeon",
+      "netspeed": "2000down/800up",
+      "host": "akash",
+      "tier": "community"
+    }
+  },
+  {
+    "address": "akash1hkpz92je4rtxxr6qyel898a4ujlea0pgsgs6vz",
+    "uptime": {
+      "percentage": 98.1,
+      "since": "PT168H"
+    },
+    "active": true,
+    "extraAttributes": {
+      "organization": "Private",
+      "arch": "amd64",
+      "cpu": "intel",
+      "storage": "ssd"
+    }
+  },
+  {
+    "address": "akash1zne8f6s8jxjjkan6c3k5cz9qh9zgh4z0w98z20",
+    "uptime": {
+      "percentage": 97.86910197869102,
+      "since": "PT168H"
+    },
+    "active": true,
+    "extraAttributes": {
+      "organization": "Long Street Technologies, LLC",
+      "arch": "amd64"
+    }
+  },
+  {
+    "address": "akash1q7spv2cw06yszgfp4f9ed59lkka6ytn8g4tkjf",
+    "uptime": {
+      "percentage": 99.95,
+      "since": "PT168H"
+    },
+    "active": true,
+    "extraAttributes": {
+      "capabilities/storage/1/class": "default",
+      "capabilities/storage/1/persistent": "true",
+      "capabilities/storage/2/class": "beta2",
+      "capabilities/storage/2/persistent": "true",
+      "host": "akash",
+      "organization": "akash.network",
+      "region": "us-west",
+      "tier": "community",
+      "provider": "1",
+      "chia-plotting": "true"
+    }
+  },
+  {
+    "address": "akash1qhjtxmacslmefm3v4sn5ggq6ed9jn83cy2rjd0",
+    "uptime": {
+      "percentage": 99.7,
+      "since": "PT168H"
+    },
+    "active": true,
+    "extraAttributes": {
+      "region": "us-west",
+      "chia-plotting": "false",
+      "host": "akash",
+      "cpu": "intel",
+      "tier": "community",
+      "network_download": "1000",
+      "network_upload": "1000",
+      "status": "https://status.akash.rocks"
+    }
+  },
+  {
+    "address": "akash1rltqjwnlv48t7wyapkhekjpmc0p74s53rnk7vq",
+    "uptime": {
+      "percentage": 94.55,
+      "since": "PT168H"
+    },
+    "active": true,
+    "extraAttributes": {
+      "region": "ap-east-hk",
+      "host": "UDomain",
+      "capabilities/storage/1/class": "beta2",
+      "capabilities/storage/1/persistent": "true"
+    }
+  },
+  {
+    "address": "akash1qk9dg3kr3jx6q5l2uf7g7mm8st2mr8ylfakepy",
+    "uptime": {
+      "percentage": 99.6,
+      "since": "PT168H"
+    },
+    "active": true,
+    "extraAttributes": {
+      "region": "us-central",
+      "chia-plotting": "false",
+      "host": "akash",
+      "cpu": "xeon",
+      "tier": "community",
+      "organization": "cryptoandcoffee",
+      "network_download": "1000",
+      "network_upload": "1000",
+      "status": "https://status.xeon.computer"
+    }
+  },
+  {
+    "address": "akash1r7y2msa9drwjss5umza854he5vwr2czunye9de",
+    "uptime": {
+      "percentage": 100.0,
+      "since": "PT168H"
+    },
+    "active": true,
+    "extraAttributes": {
+      "Datacenter": "us-east-vin1",
+      "region": "us-east",
+      "organization": "QloudIT_DAAO",
+      "host": "akash",
+      "tier": "community"
+    }
+  },
+  {
+    "address": "akash1xcclnvcl7nup95lp8tp9jzf54q8wk6t0uwjkzj",
+    "uptime": {
+      "percentage": 99.95,
+      "since": "PT168H"
+    },
+    "active": true,
+    "extraAttributes": {
+      "region": "us-west",
+      "chia-plotting": "false",
+      "host": "akash",
+      "cpu": "amd",
+      "tier": "community",
+      "organization": "cryptoandcoffee",
+      "network_download": "1000",
+      "network_upload": "300",
+      "status": "https://status.sfo.computer"
+    }
+  },
+  {
+    "address": "akash1g8m36ge6yekgkfktl08x8vrp0nq9v0l73jzy32",
+    "uptime": {
+      "percentage": 99.95,
+      "since": "PT168H"
+    },
+    "active": true,
+    "extraAttributes": {
+      "region": "eu-west",
+      "chia-plotting": "false",
+      "host": "akash",
+      "cpu": "amd",
+      "tier": "community",
+      "organization": "ovrclk.com",
+      "network_download": "1000",
+      "network_upload": "1000",
+      "status": "https://status.xch.computer"
+    }
+  },
+  {
+    "address": "akash19yhu3jgw8h0320av98h8n5qczje3pj3u9u2amp",
+    "uptime": {
+      "percentage": 96.6,
+      "since": "PT168H"
+    },
+    "active": true,
+    "extraAttributes": {
+      "region": "us-east",
+      "chia-plotting": "false",
+      "host": "akash",
+      "cpu": "amd",
+      "tier": "community",
+      "organization": "cryptoandcoffee",
+      "network_download": "1000",
+      "network_upload": "1000",
+      "status": "https://status.bdl.computer"
+    }
+  },
+  {
+    "address": "akash18ga02jzaq8cw52anyhzkwta5wygufgu6zsz6xc",
+    "uptime": {
+      "percentage": 98.95,
+      "since": "PT168H"
+    },
+    "active": true,
+    "extraAttributes": {
+      "region": "eu-east",
+      "chia-plotting": "true",
+      "host": "akash",
+      "cpu": "AMD Epyc",
+      "tier": "community",
+      "organization": "europlots",
+      "network_download": "2000",
+      "network_upload": "2000",
+      "status": "https://provider-status.europlots.com",
+      "capabilities/storage/1/class": "default",
+      "capabilities/storage/1/persistent": "true",
+      "capabilities/storage/2/class": "beta3",
+      "capabilities/storage/2/persistent": "true"
+    }
+  },
+  {
+    "address": "akash1vky0uh4wayh9npd74uqesglpaxwymynnspf6a4",
+    "uptime": {
+      "percentage": 99.75,
+      "since": "PT168H"
+    },
+    "active": true,
+    "extraAttributes": {
+      "datacenter": "equinix-metal-ewr1",
+      "host": "akash",
+      "generation": "mn2-ng",
+      "capabilities/storage/1/class": "default",
+      "capabilities/storage/1/persistent": "true",
+      "capabilities/storage/2/class": "beta3",
+      "capabilities/storage/2/persistent": "true",
+      "ip-lease": "true"
+    }
+  },
+  {
+    "address": "akash10fl5f6ukr8kc03mtmf8vckm6kqqwqpc04eruqa",
+    "uptime": {
+      "percentage": 99.95,
+      "since": "PT168H"
+    },
+    "active": true,
+    "extraAttributes": {
+      "region": "us-central",
+      "chia-plotting": "true",
+      "host": "akash",
+      "cpu": "amd",
+      "tier": "community",
+      "organization": "cryptoandcoffee",
+      "network_download": "1000",
+      "network_upload": "1000",
+      "status": "https://status.akash.world"
+    }
+  },
+  {
+    "address": "akash1wxr49evm8hddnx9ujsdtd86gk46s7ejnccqfmy",
+    "uptime": {
+      "percentage": 87.1,
+      "since": "PT168H"
+    },
+    "active": true,
+    "extraAttributes": {
+      "region": "us-west",
+      "chia-plotting": "false",
+      "host": "akash",
+      "cpu": "intel",
+      "tier": "community",
+      "organization": "BT",
+      "network_download": "10000",
+      "network_upload": "10000",
+      "status": "https://updown.io/p/qmfr4"
+    }
+  },
+  {
+    "address": "akash14c4ng96vdle6tae8r4hc2w4ujwrsh3x9tuudk0",
+    "uptime": {
+      "percentage": 99.95,
+      "since": "PT168H"
+    },
+    "active": true,
+    "extraAttributes": {
+      "datacenter": "equinix-metal-ams1",
+      "host": "akash",
+      "generation": "mn2-ng",
+      "capabilities/storage/1/class": "default",
+      "capabilities/storage/1/persistent": "true",
+      "capabilities/storage/2/class": "beta3",
+      "capabilities/storage/2/persistent": "true"
+    }
+  },
+  {
+    "address": "akash15ksejj7g4su7ljufsg0a8eglvkje94z8qsh68a",
+    "uptime": {
+      "percentage": 96.0,
+      "since": "PT168H"
+    },
+    "active": true,
+    "extraAttributes": {
+      "host": "akash",
+      "region": "us-east",
+      "tier": "community",
+      "cpu": "amd",
+      "network_download": "2500",
+      "network_upload": "2500",
+      "ip-lease": "true",
+      "capabilities/storage/1/class": "default",
+      "capabilities/storage/1/persistent": "true",
+      "capabilities/storage/2/class": "beta1",
+      "capabilities/storage/2/persistent": "true"
+    }
+  },
+  {
+    "address": "akash1nxq8gmsw2vlz3m68qvyvcf3kh6q269ajvqw6y0",
+    "uptime": {
+      "percentage": 99.95,
+      "since": "PT168H"
+    },
+    "active": true,
+    "extraAttributes": {
+      "region": "europe",
+      "host": "akash",
+      "tier": "community",
+      "capabilities/storage/1/class": "default",
+      "capabilities/storage/1/persistent": "true",
+      "capabilities/storage/2/class": "beta3",
+      "capabilities/storage/2/persistent": "true"
+    }
+  },
+  {
+    "address": "akash144v0qmrrjxjf9402c2f026yr7jzg9dzdfeyx8c",
+    "uptime": {
+      "percentage": 93.89999999999999,
+      "since": "PT168H"
+    },
+    "active": true,
+    "extraAttributes": {
+      "region": "eu-west",
+      "host": "akash",
+      "tier": "community",
+      "organization": "cherryservers.com",
+      "chia-plotting": "true"
+    }
+  },
+  {
+    "address": "akash1mn3fx53ngzptq7l4h4f0mqa0yj6fd8pd0s2xgm",
+    "uptime": {
+      "percentage": 89.45,
+      "since": "PT168H"
+    },
+    "active": true,
+    "extraAttributes": {
+      "region": "us-east",
+      "host": "akash",
+      "tier": "community",
+      "organization": "BoxedCloud"
+    }
+  },
+  {
+    "address": "akash1eev7qt9ghz0vy59d7jf5dpvkwxvvwywjj79e3m",
+    "uptime": {
+      "percentage": 95.92198581560284,
+      "since": "PT168H"
+    },
+    "active": true,
+    "extraAttributes": {
+      "region": "eu-west",
+      "host": "akash",
+      "tier": "community",
+      "organization": "quasarch",
+      "arch": "arm64"
+    }
+  },
+  {
+    "address": "akash1qt5jjuhwffddjpk2vn7696s6y6c0lwfv2ggetz",
+    "uptime": {
+      "percentage": 0.0,
+      "since": "PT168H"
+    },
+    "active": false,
+    "extraAttributes": null
+  },
+  {
+    "address": "akash1quj8u2dgvrdas9m4nkws9rd5ngpmrrdugx5ekk",
+    "uptime": {
+      "percentage": 0.0,
+      "since": "PT168H"
+    },
+    "active": false,
+    "extraAttributes": null
+  },
+  {
+    "address": "akash1vppf2922vuzgxc2jgetxtx7uxqfss59e7gha3g",
+    "uptime": {
+      "percentage": 0.0,
+      "since": "PT168H"
+    },
+    "active": false,
+    "extraAttributes": null
+  },
+  {
+    "address": "akash1dy6fxzkg7n6402x9n04z9tc3hwl5r4j8vhjqcw",
+    "uptime": {
+      "percentage": 0.0,
+      "since": "PT168H"
+    },
+    "active": false,
+    "extraAttributes": null
+  },
+  {
+    "address": "akash1wsk46ascfrw3wh4axrpccluq468qhgymzwe0jw",
+    "uptime": {
+      "percentage": 0.0,
+      "since": "PT168H"
+    },
+    "active": false,
+    "extraAttributes": null
+  },
+  {
+    "address": "akash153vxg53pe3jr3feq8k0ddeldddjejkng8d5jp3",
+    "uptime": {
+      "percentage": 0.0,
+      "since": "PT168H"
+    },
+    "active": false,
+    "extraAttributes": null
+  },
+  {
+    "address": "akash1nn7nvc5ctg8jq0fpwvxaqtrfsd9l7n82h3pya4",
+    "uptime": {
+      "percentage": 0.0,
+      "since": "PT168H"
+    },
+    "active": false,
+    "extraAttributes": null
+  },
+  {
+    "address": "akash1l7dam0072lt6ftqdvn6l4ytdr6eed8p9tu3z6u",
+    "uptime": {
+      "percentage": 0.0,
+      "since": "PT168H"
+    },
+    "active": false,
+    "extraAttributes": null
+  },
+  {
+    "address": "akash1td8le8t8k3xgjphkagpgxkx023lkym9rnq4hmj",
+    "uptime": {
+      "percentage": 0.0,
+      "since": "PT168H"
+    },
+    "active": false,
+    "extraAttributes": null
+  },
+  {
+    "address": "akash18n0wn7j03psmdnlk67f592zz2a4s2ntlhs9ymt",
+    "uptime": {
+      "percentage": 0.0,
+      "since": "PT168H"
+    },
+    "active": false,
+    "extraAttributes": null
+  }
+]

@@ -72,10 +72,10 @@ func dataSourceProvidersRead(ctx context.Context, d *schema.ResourceData, m inte
 	var providers []types.Provider
 	if d.Get("all_providers").(bool) {
 		tflog.Info(ctx, "All providers requested")
-		providers = providersClient.GetAllProviders()
+		providers, _ = providersClient.GetAllProviders()
 	} else {
 		tflog.Info(ctx, "Active providers requested")
-		providers = providersClient.GetActiveProviders()
+		providers, _ = providersClient.GetActiveProviders()
 	}
 
 	if attributes, ok := d.GetOk("required_attributes"); ok {
