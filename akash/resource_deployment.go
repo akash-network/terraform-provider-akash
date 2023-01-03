@@ -283,12 +283,16 @@ func selectProvider(ctx context.Context, d *schema.ResourceData, bids types.Bids
 	filterPipeline := filtering.NewFilterPipeline(bids)
 
 	if f, ok := d.GetOk("provider_filters"); ok {
+		if !ok {
+			return "", errors.New("at least one field is expected inside filters")
+		}
+
 		tflog.Info(ctx, "Filters provided")
 
 		filters := f.([]interface{})
-		filter := filters[0].(map[string]interface{})
+		filter, ok := filters[0].(map[string]interface{})
 		if !ok {
-			return "", errors.New("at least one field is expected inside filters")
+			return "", errors.New("no filters provided")
 		}
 
 		bidsProviders := bids.GetProviderAddresses()

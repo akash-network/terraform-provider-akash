@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `akash_providers` datasource
 ### Changed
 - `akash_deployment` output `services` now has a new structure and more information regarding replicas
+### Fixed
+- Bug where the provider was crashing when no filters were provided in `provider_filters`
 ### Development
 - Integration with Praetor's API through custom caching service
 - Start using Akash's type definitions
