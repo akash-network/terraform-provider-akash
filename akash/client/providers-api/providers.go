@@ -8,7 +8,7 @@ import (
 	"terraform-provider-akash/akash/client/types"
 )
 
-type Provider struct {
+type provider struct {
 	Address    string            `json:"address"`
 	Active     bool              `json:"active"`
 	Uptime     uptime            `json:"uptime"`
@@ -24,12 +24,14 @@ type ProvidersClient struct {
 	host string
 }
 
+// New creates a new ProviderClient based on the given host.
 func New(host string) *ProvidersClient {
 	return &ProvidersClient{
 		host: host,
 	}
 }
 
+// GetAllProviders gets all the providers from the providers' API. Returns error in case something goes wrong.
 func (c *ProvidersClient) GetAllProviders() ([]types.Provider, error) {
 	req, err := http.NewRequest(http.MethodGet, c.host, nil)
 	if err != nil {
@@ -45,7 +47,7 @@ func (c *ProvidersClient) GetAllProviders() ([]types.Provider, error) {
 		return nil, errors.New(fmt.Sprintf("Response status code %d", resp.StatusCode))
 	}
 
-	var result []Provider
+	var result []provider
 	dec := json.NewDecoder(resp.Body)
 	if err := dec.Decode(&result); err != nil {
 		return nil, err
@@ -67,6 +69,7 @@ func (c *ProvidersClient) GetAllProviders() ([]types.Provider, error) {
 	return providers, err
 }
 
+// GetActiveProviders gets the active providers from the providers' API.
 func (c *ProvidersClient) GetActiveProviders() ([]types.Provider, error) {
 	providers, err := c.GetAllProviders()
 	if err != nil {

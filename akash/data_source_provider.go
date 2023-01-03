@@ -94,7 +94,7 @@ func dataSourceProvidersRead(ctx context.Context, d *schema.ResourceData, m inte
 	akashProviders := make([]map[string]interface{}, 0, len(providers))
 	for _, p := range providers {
 		if p.Uptime < float32(d.Get("minimum_uptime").(float64)) {
-			tflog.Debug(ctx, fmt.Sprintf("Provider %s uptime (%.2f) is below minimum", p.Address, p.Uptime))
+			tflog.Debug(ctx, fmt.Sprintf("provider %s uptime (%.2f) is below minimum", p.Address, p.Uptime))
 		} else {
 			akashProviders = append(akashProviders, map[string]interface{}{
 				"address":    p.Address,

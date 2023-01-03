@@ -156,8 +156,8 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 	pctx, task := trace.NewTask(ctx, "Create")
 	defer task.End()
 
-	reg := trace.StartRegion(pctx, "CreateTemporaryDeploymentFile")
-	manifestLocation, err := CreateTemporaryDeploymentFile(ctx, d.Get("sdl").(string))
+	reg := trace.StartRegion(pctx, "CreateTemporaryFile")
+	manifestLocation, err := CreateTemporaryFile(ctx, d.Get("sdl").(string))
 	if err != nil {
 		diags = append(diags)
 		return diag.FromErr(err)
@@ -453,7 +453,7 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, m int
 	provider := deploymentId[DeploymentIdProvider]
 
 	if d.HasChange("sdl") {
-		manifestLocation, err := CreateTemporaryDeploymentFile(ctx, d.Get("sdl").(string))
+		manifestLocation, err := CreateTemporaryFile(ctx, d.Get("sdl").(string))
 
 		// Update the deployment
 		if err := akash.UpdateDeployment(seqs.Dseq, manifestLocation); err != nil {

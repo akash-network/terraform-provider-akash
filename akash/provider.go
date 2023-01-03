@@ -21,7 +21,7 @@ const Home = "home"
 const Path = "path"
 const ProvidersApi = "providers_api"
 
-// Provider -
+// Provider represents the provider resource.
 func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
