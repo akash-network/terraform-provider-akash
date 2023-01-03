@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"path"
+	"os"
 	"terraform-provider-akash/akash/client/types"
 )
 
@@ -34,7 +34,7 @@ func New(host string) *ProvidersClient {
 
 // GetAllProviders gets all the providers from the providers' API. Returns error in case something goes wrong.
 func (c *ProvidersClient) GetAllProviders() ([]types.Provider, error) {
-	addr := path.Join(c.host, "provider/")
+	addr := c.host + "/provider" + string(os.PathSeparator)
 	req, err := http.NewRequest(http.MethodGet, addr, nil)
 	if err != nil {
 		return nil, err

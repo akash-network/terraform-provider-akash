@@ -76,7 +76,7 @@ func Provider() *schema.Provider {
 			ProvidersApi: {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("PROVIDERS_API", "http://providers-api.quasarch.cloud/"),
+				DefaultFunc: schema.EnvDefaultFunc("PROVIDERS_API", "http://providers-api.quasarch.cloud"),
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{

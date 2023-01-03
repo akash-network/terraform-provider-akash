@@ -9,7 +9,8 @@ import (
 )
 
 func TestGetAllProviders(t *testing.T) {
-	handler := http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/provider/", func(writer http.ResponseWriter, request *http.Request) {
 		file, err := os.Open("../../../testdata/providers.json")
 		if err != nil {
 			t.Fatalf("Could not open file: %s", err)
@@ -20,10 +21,14 @@ func TestGetAllProviders(t *testing.T) {
 	})
 
 	t.Run("should return all providers", func(t *testing.T) {
-		server := httptest.NewServer(handler)
+		server := httptest.NewServer(mux)
 		expectedProviders := 51
 		mockClient := New(server.URL)
-		providers, _ := mockClient.GetAllProviders()
+		defer server.Close()
+		providers, err := mockClient.GetAllProviders()
+		if err != nil {
+			t.Fatal(err)
+		}
 
 		if len(providers) != expectedProviders {
 			t.Fatalf("Expected %d providers, got %d", expectedProviders, len(providers))
@@ -32,7 +37,8 @@ func TestGetAllProviders(t *testing.T) {
 }
 
 func TestGetActiveProviders(t *testing.T) {
-	handler := http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/provider/", func(writer http.ResponseWriter, request *http.Request) {
 		file, err := os.Open("../../../testdata/providers.json")
 		if err != nil {
 			t.Fatalf("Could not open file: %s", err)
@@ -43,9 +49,10 @@ func TestGetActiveProviders(t *testing.T) {
 	})
 
 	t.Run("should return active providers", func(t *testing.T) {
-		server := httptest.NewServer(handler)
+		server := httptest.NewServer(mux)
 		expectedProviders := 41
 		mockClient := New(server.URL)
+		defer server.Close()
 		providers, _ := mockClient.GetActiveProviders()
 
 		if len(providers) != expectedProviders {
@@ -54,11 +61,13 @@ func TestGetActiveProviders(t *testing.T) {
 	})
 
 	t.Run("should break if its not 200 OK", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		mux := http.NewServeMux()
+		mux.HandleFunc("/provider/", func(writer http.ResponseWriter, request *http.Request) {
 			writer.WriteHeader(500)
-		}))
-
+		})
+		server := httptest.NewServer(mux)
 		mockClient := New(server.URL)
+		defer server.Close()
 
 		if _, err := mockClient.GetActiveProviders(); err == nil {
 			t.Fatalf("Expected an error")
