@@ -8,7 +8,7 @@ import (
 )
 
 func TestAkashCliAppendsSubcommands(t *testing.T) {
-	cmd := cli.AkashCli(client.New(context.TODO(), client.AkashConfiguration{})).Query().Market().Bid().List()
+	cmd := cli.AkashCli(client.New(context.TODO(), client.AkashProviderConfiguration{})).Query().Market().Bid().List()
 	expectedSize := 5
 
 	if len(cmd.Content) != expectedSize {
@@ -18,7 +18,7 @@ func TestAkashCliAppendsSubcommands(t *testing.T) {
 }
 
 func TestAkashCliHeadlessSizeIsCorrect(t *testing.T) {
-	cmd := cli.AkashCli(client.New(context.TODO(), client.AkashConfiguration{})).Query().Market().Bid().List().Headless()
+	cmd := cli.AkashCli(client.New(context.TODO(), client.AkashProviderConfiguration{})).Query().Market().Bid().List().Headless()
 	expectedSize := 4
 
 	if len(cmd) != expectedSize {

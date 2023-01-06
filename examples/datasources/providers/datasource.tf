@@ -16,8 +16,14 @@ provider "akash" {
   chain_version = "0.16.4"
 }
 
-data "akash_deployments" "all" {}
+data "akash_providers" "active_providers" {
+  all_providers = false
+  minimum_uptime = 100
+  required_attributes = {
+    "region" = "us-west"
+  }
+}
 
-output "akash_deployments" {
-  value = data.akash_deployments.all
+output "active_providers" {
+  value = data.akash_providers.active_providers.providers
 }

@@ -1,11 +1,7 @@
 package types
 
-type LeaseStatus struct {
-	Services map[string]Service
-}
+import (
+	akashtypes "github.com/ovrclk/provider-services/gateway/rest"
+)
 
-type Service struct {
-	URIs      []string `json:"uris"`
-	Name      string   `json:"name"`
-	Available int32    `json:"available"`
-}
+type LeaseStatus akashtypes.LeaseStatus

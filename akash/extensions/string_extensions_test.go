@@ -16,3 +16,11 @@ func TestFindAll(t *testing.T) {
 		}
 	})
 }
+
+func BenchmarkFindAll(b *testing.B) {
+	testSlice := []string{"A", "B", "C", "D", "test", "F"}
+
+	for i := 0; i < b.N; i++ {
+		FindAll(testSlice, []string{"yes", "test", "A", "there"})
+	}
+}

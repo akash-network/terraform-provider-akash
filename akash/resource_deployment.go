@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"runtime/trace"
 	"strings"
 	"terraform-provider-akash/akash/client"
 	"terraform-provider-akash/akash/client/types"
@@ -93,19 +94,49 @@ func resourceDeployment() *schema.Resource {
 					},
 				},
 			},
-
 			"services": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"service_name": &schema.Schema{
+						"name": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"service_uri": &schema.Schema{
-							Type:     schema.TypeString,
+						"uris": {
+							Type:     schema.TypeList,
 							Computed: true,
+							Elem:     &schema.Schema{Type: schema.TypeString},
+						},
+						"available":          {Type: schema.TypeInt, Computed: true},
+						"total":              {Type: schema.TypeInt, Computed: true},
+						"replicas":           {Type: schema.TypeInt, Computed: true},
+						"updated_replicas":   {Type: schema.TypeInt, Computed: true},
+						"available_replicas": {Type: schema.TypeInt, Computed: true},
+						"ready_replicas":     {Type: schema.TypeInt, Computed: true},
+						"ips": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"port":          {Type: schema.TypeInt, Computed: true},
+									"ip":            {Type: schema.TypeString, Computed: true},
+									"external_port": {Type: schema.TypeInt, Computed: true},
+									"protocol":      {Type: schema.TypeString, Computed: true},
+								},
+							},
+						},
+						"forwarded_ports": &schema.Schema{
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"host":          {Type: schema.TypeString, Computed: true},
+									"port":          {Type: schema.TypeInt, Computed: true},
+									"external_port": {Type: schema.TypeInt, Computed: true},
+									"proto":         {Type: schema.TypeString, Computed: true},
+								},
+							},
 						},
 					},
 				},
@@ -122,18 +153,25 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 
 	var diags diag.Diagnostics
 
-	manifestLocation, err := CreateTemporaryDeploymentFile(ctx, d.Get("sdl").(string))
+	pctx, task := trace.NewTask(ctx, "Create")
+	defer task.End()
 
+	reg := trace.StartRegion(pctx, "CreateTemporaryFile")
+	manifestLocation, err := CreateTemporaryFile(ctx, d.Get("sdl").(string))
 	if err != nil {
 		diags = append(diags)
 		return diag.FromErr(err)
 	}
+	reg.End()
 
+	reg = trace.StartRegion(pctx, "CreateDeployment")
 	seqs, err := akash.CreateDeployment(manifestLocation)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	reg.End()
 
+	reg = trace.StartRegion(pctx, "queryBids")
 	bids, diagnostics := queryBids(ctx, akash, seqs)
 	if diagnostics != nil {
 		tflog.Warn(ctx, "No bids on deployment")
@@ -142,7 +180,9 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 		}
 		return diagnostics
 	}
+	reg.End()
 
+	reg = trace.StartRegion(pctx, "selectProvider")
 	provider, err := selectProvider(ctx, d, bids)
 	if err != nil {
 		if err := akash.DeleteDeployment(seqs.Dseq, akash.Config.AccountAddress); err != nil {
@@ -151,7 +191,9 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 
 		return diag.FromErr(err)
 	}
+	reg.End()
 
+	reg = trace.StartRegion(pctx, "createLease")
 	if diagnostics := createLease(ctx, akash, seqs, provider); diagnostics != nil {
 		tflog.Warn(ctx, "Could not create lease, deleting deployment")
 		err := akash.DeleteDeployment(seqs.Dseq, akash.Config.AccountAddress)
@@ -161,7 +203,9 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 		}
 		return diagnostics
 	}
+	reg.End()
 
+	reg = trace.StartRegion(pctx, "sendManifest")
 	if diagnostics := sendManifest(ctx, akash, seqs, provider, manifestLocation); diagnostics != nil {
 		tflog.Warn(ctx, "Could not send manifest, deleting deployment")
 		err := akash.DeleteDeployment(seqs.Dseq, akash.Config.AccountAddress)
@@ -170,6 +214,9 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 		}
 		return diagnostics
 	}
+	reg.End()
+
+	reg = trace.StartRegion(pctx, "setCreatedState")
 	tflog.Info(ctx, "Setting created state")
 	if diagnostics := setCreatedState(d, akash.Config.AccountAddress, seqs, provider); diagnostics != nil {
 		tflog.Warn(ctx, "Could not set state to created, deleting deployment")
@@ -179,6 +226,7 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m int
 		}
 		return diagnostics
 	}
+	reg.End()
 
 	d.SetId(seqs.Dseq + IdSeparator + seqs.Gseq + IdSeparator + seqs.Oseq + IdSeparator + akash.Config.AccountAddress + IdSeparator + provider)
 
@@ -235,12 +283,16 @@ func selectProvider(ctx context.Context, d *schema.ResourceData, bids types.Bids
 	filterPipeline := filtering.NewFilterPipeline(bids)
 
 	if f, ok := d.GetOk("provider_filters"); ok {
+		if !ok {
+			return "", errors.New("at least one field is expected inside filters")
+		}
+
 		tflog.Info(ctx, "Filters provided")
 
 		filters := f.([]interface{})
-		filter := filters[0].(map[string]interface{})
+		filter, ok := filters[0].(map[string]interface{})
 		if !ok {
-			return "", errors.New("at least one field is expected inside filters")
+			return "", errors.New("no filters provided")
 		}
 
 		bidsProviders := bids.GetProviderAddresses()
@@ -338,6 +390,9 @@ func resourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m inter
 
 	services := extractServicesFromLeaseStatus(*leaseStatus)
 
+	tflog.Info(ctx, fmt.Sprintf("Extracted %d services from lease-status", len(services)))
+	tflog.Debug(ctx, fmt.Sprintf("Services: %+v", services))
+
 	if err := d.Set("services", services); err != nil {
 		return diag.FromErr(err)
 	}
@@ -345,13 +400,44 @@ func resourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m inter
 	return diags
 }
 
-func extractServicesFromLeaseStatus(leaseStatus types.LeaseStatus) []interface{} {
-	var services []interface{}
+func extractServicesFromLeaseStatus(leaseStatus types.LeaseStatus) []map[string]interface{} {
+	// TODO: Force ordering of services to provide some predictability to the position of the services
+	services := make([]map[string]interface{}, 0)
 
 	for key, value := range leaseStatus.Services {
 		service := make(map[string]interface{})
-		service["service_name"] = key
-		service["service_uri"] = strings.Join(value.URIs, " | ")
+		service["name"] = key
+		service["uris"] = value.URIs
+		service["replicas"] = value.Replicas
+		service["updated_replicas"] = value.UpdatedReplicas
+		service["available_replicas"] = value.AvailableReplicas
+		service["ready_replicas"] = value.ReadyReplicas
+		service["available"] = value.Available
+		service["total"] = value.Total
+
+		// Populate IPs
+		serviceIPs := make([]map[string]interface{}, 0, len(leaseStatus.IPs[key]))
+		for _, value := range leaseStatus.IPs[key] {
+			ip := make(map[string]interface{})
+			ip["port"] = value.Port
+			ip["ip"] = value.IP
+			ip["external_port"] = value.ExternalPort
+			ip["proto"] = value.Protocol
+			serviceIPs = append(serviceIPs, ip)
+		}
+		service["ips"] = serviceIPs
+
+		// Populate forwarded ports
+		serviceForwardedPorts := make([]map[string]interface{}, 0, len(leaseStatus.ForwardedPorts[key]))
+		for _, value := range leaseStatus.ForwardedPorts[key] {
+			forwardedPort := make(map[string]interface{})
+			forwardedPort["port"] = value.Port
+			forwardedPort["host"] = value.Host
+			forwardedPort["external_port"] = value.ExternalPort
+			forwardedPort["proto"] = value.Proto
+			serviceForwardedPorts = append(serviceForwardedPorts, forwardedPort)
+		}
+		service["forwarded_ports"] = serviceForwardedPorts
 
 		services = append(services, service)
 	}
@@ -371,7 +457,7 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, m int
 	provider := deploymentId[DeploymentIdProvider]
 
 	if d.HasChange("sdl") {
-		manifestLocation, err := CreateTemporaryDeploymentFile(ctx, d.Get("sdl").(string))
+		manifestLocation, err := CreateTemporaryFile(ctx, d.Get("sdl").(string))
 
 		// Update the deployment
 		if err := akash.UpdateDeployment(seqs.Dseq, manifestLocation); err != nil {
