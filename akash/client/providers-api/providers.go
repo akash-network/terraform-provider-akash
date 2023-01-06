@@ -59,7 +59,7 @@ func (c *ProvidersClient) GetAllProviders() ([]types.Provider, error) {
 
 	for _, provider := range result {
 
-		// TODO: Fix bad design
+		// TODO: Fix bad design. Dependency on types of other API
 		providers = append(providers, types.Provider{
 			Address:    provider.Address,
 			Active:     provider.Active,
