@@ -11,7 +11,7 @@ For the provider to work properly you'll need:
 
 ## Installation
 
-You can visit the [registry](https://registry.terraform.io/providers/joao-luna-98/akash/latest) and follow the installations steps.
+You can visit the [registry](https://registry.terraform.io/providers/cloud-j-luna/akash/latest) and follow the installations steps.
 
 **or**
 
